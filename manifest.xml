@@ -43,7 +43,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://YOUR_HOST/taskflow-addin/panel.html"/>
+        <SourceLocation DefaultValue="https://xcroix.github.io/TaskFlow//taskflow-addin/panel.html"/>
         <RequestedHeight>550</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -131,8 +131,8 @@
       </bt:Images>
       <bt:Urls>
         <!-- ⚠️  Replace YOUR_HOST with your actual hosting URL -->
-        <bt:Url id="FunctionFile.Url" DefaultValue="https://YOUR_HOST/taskflow-addin/functions.html"/>
-        <bt:Url id="TaskPane.Url"     DefaultValue="https://YOUR_HOST/taskflow-addin/panel.html"/>
+        <bt:Url id="FunctionFile.Url" DefaultValue="https://xcroix.github.io/TaskFlow//taskflow-addin/functions.html"/>
+        <bt:Url id="TaskPane.Url"     DefaultValue="https://xcroix.github.io/TaskFlow//taskflow-addin/panel.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="Group.Label"       DefaultValue="TaskFlow"/>
