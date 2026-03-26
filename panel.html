@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow</title>
+<script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08090e;--surface:#0f111a;--surface2:#181b27;--surface3:#202332;
+  --border:#454a6a;--border2:#686e96;--text:#ffffff;--text2:#e0e4ff;--text3:#a0a8cc;
+  --accent:#8b7eff;--accent2:#b0a6ff;--accent-dim:rgba(139,126,255,0.22);
+  --green:#00f090;--green-dim:rgba(0,240,144,0.16);
+  --orange:#ff9d2e;--orange-dim:rgba(255,157,46,0.16);
+  --red:#ff4f4f;--red-dim:rgba(255,79,79,0.16);
+  --yellow:#ffe033;--blue:#1ab8ff;--blue-dim:rgba(26,184,255,0.16);
+  --ms:#1a9fff;--ms-dim:rgba(26,159,255,0.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--surface);border-bottom:1.5px solid var(--border2);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-logo{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.topbar-logo span{color:var(--accent)}
+.topbar-tab{padding:5px 11px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text3);transition:all .12s;border:1.5px solid transparent}
+.topbar-tab.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(139,126,255,.35)}
+.topbar-tab:hover:not(.active){color:var(--text2);border-color:var(--border)}
+
+/* ── EMAIL CONTEXT CARD ── */
+.email-card{background:var(--surface);border-bottom:1.5px solid var(--border);padding:12px 14px;flex-shrink:0}
+.email-card-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.email-subject{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.email-from{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.email-badges{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.badge-pinned{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(139,126,255,.35)}
+.badge-flagged{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,79,79,.35)}
+.badge-attach{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+
+/* ── QUICK CREATE FROM EMAIL ── */
+.quick-create{padding:12px 14px;background:var(--surface2);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.quick-create-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.quick-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.q-select{background:var(--surface3);border:1.5px solid var(--border2);border-radius:6px;padding:6px 9px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;width:100%;cursor:pointer}
+.q-select:focus{border-color:var(--accent)}
+.q-select option{background:var(--surface3);color:var(--text)}
+.resp-row{display:flex;gap:5px;margin-bottom:8px}
+.resp-chip{flex:1;padding:6px 4px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);text-align:center;transition:all .12s}
+.resp-chip.active-followup{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
+.resp-chip.active-responsible{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.resp-chip:hover{border-color:var(--border2);color:var(--text)}
+.btn-create{width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-create:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-create:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.success-flash{background:var(--green-dim);border:1px solid rgba(0,240,144,.35);color:var(--green);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:700;text-align:center;display:none;margin-top:6px}
+
+/* ── TASK LIST ── */
+.tasks-area{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.tasks-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.tasks-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);background:var(--surface3);padding:1px 7px;border-radius:20px;border:1px solid var(--border2)}
+
+.task-item{background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .12s;position:relative}
+.task-item:hover{border-color:var(--accent);background:var(--surface2)}
+.task-item.is-current-email{border-color:var(--accent);border-left:3px solid var(--accent)}
+.task-item.done{opacity:.5}
+.task-item.done .ti-name{text-decoration:line-through;color:var(--text3)}
+.ti-top{display:flex;align-items:flex-start;gap:8px}
+.ti-check{width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .12s}
+.ti-check:hover{border-color:var(--green)}.ti-check.checked{background:var(--green);border-color:var(--green);color:#000}
+.ti-name{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
+.ti-icons{display:flex;align-items:center;gap:4px;margin-top:6px;flex-wrap:wrap}
+.ti-priority{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;border:1.5px solid;flex-shrink:0}
+.p1{color:var(--red);border-color:var(--red);background:var(--red-dim)}
+.p2{color:var(--orange);border-color:var(--orange);background:var(--orange-dim)}
+.p3{color:var(--yellow);border-color:rgba(255,224,51,.4);background:rgba(255,224,51,.08)}
+.p4{color:var(--blue);border-color:rgba(26,184,255,.4);background:var(--blue-dim)}
+.p5{color:var(--text3);border-color:var(--border2);background:var(--surface3)}
+.ti-chip{font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+.ti-chip.followup{background:var(--blue-dim);color:var(--blue);border-color:rgba(26,184,255,.3)}
+.ti-chip.responsible{background:var(--accent-dim);color:var(--accent);border-color:rgba(139,126,255,.3)}
+.ti-chip.email{background:var(--ms-dim);color:#7ec5ff;border-color:rgba(26,159,255,.3)}
+.ti-chip.done-chip{background:var(--green-dim);color:var(--green);border-color:rgba(0,240,144,.3)}
+.ti-chip.pending{background:rgba(255,224,51,.1);color:var(--yellow);border-color:rgba(255,224,51,.3)}
+.ti-chip.progress{background:var(--blue-dim);color:var(--blue);border-color:rgba(26,184,255,.3)}
+.empty-msg{color:var(--text3);font-size:12px;text-align:center;padding:30px 10px;line-height:1.6}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:var(--text3);font-size:12px}
+.dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:blink 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">Task<span>Flow</span></div>
+  <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')">Este email</div>
+  <div class="topbar-tab" id="tab-all" onclick="switchTab('all')">Todas</div>
+  <div class="topbar-tab" id="tab-pinned" onclick="switchTab('pinned')">Pinned</div>
+</div>
+
+<!-- EMAIL CONTEXT CARD -->
+<div class="email-card" id="email-card">
+  <div class="email-card-label">Email activo</div>
+  <div class="email-subject" id="email-subject">Cargando...</div>
+  <div class="email-from" id="email-from"></div>
+  <div class="email-badges" id="email-badges"></div>
+</div>
+
+<!-- QUICK CREATE -->
+<div class="quick-create" id="quick-create-section">
+  <div class="quick-create-title">Crear tarea desde este email</div>
+  <div class="quick-row">
+    <select class="q-select" id="q-priority">
+      <option value="1">🔴 Prioridad 1</option>
+      <option value="2">🟠 Prioridad 2</option>
+      <option value="3" selected>🟡 Prioridad 3</option>
+      <option value="4">🔵 Prioridad 4</option>
+      <option value="5">⚪ Prioridad 5</option>
+    </select>
+    <select class="q-select" id="q-project">
+      <option value="">Sin proyecto</option>
+    </select>
+  </div>
+  <div class="resp-row">
+    <div class="resp-chip active-followup" id="resp-followup" onclick="selectResp('followup')">👁️ Seguimiento</div>
+    <div class="resp-chip" id="resp-responsible" onclick="selectResp('responsible')">🙋 Responsable</div>
+  </div>
+  <button class="btn-create" id="btn-create" onclick="createTaskFromEmail()">
+    ＋ Crear tarea
+  </button>
+  <div class="success-flash" id="success-flash">✅ Tarea creada correctamente</div>
+</div>
+
+<!-- TASK LIST -->
+<div class="tasks-area" id="tasks-area">
+  <div class="tasks-header">
+    <span class="tasks-title" id="tasks-title">Tareas relacionadas</span>
+    <span class="tasks-count" id="tasks-count">0</span>
+  </div>
+  <div id="task-list-inner">
+    <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Cargando Office...</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW OUTLOOK ADD-IN — PANEL
+// ══════════════════════════════════════════════════════════════
+
+const STORAGE_KEY   = 'taskflow_tasks';
+const PROJECTS_KEY  = 'taskflow_projects';
+
+let tasks      = [];
+let projects   = [];
+let currentEmailId  = null;
+let currentConvId   = null;
+let currentResp     = 'followup';
+let currentTab      = 'email';
+let officeItem      = null;
+
+// ── INIT ─────────────────────────────────────────────────────
+Office.onReady(info => {
+  if (info.host !== Office.HostType.Outlook) return;
+  loadData();
+  populateProjectSelect();
+  bindEmailContext();
+  // Re-bind when user switches emails
+  Office.context.mailbox.addHandlerAsync(
+    Office.EventType.ItemChanged,
+    () => bindEmailContext()
+  );
+});
+
+function loadData() {
+  tasks    = JSON.parse(localStorage.getItem(STORAGE_KEY)   || '[]');
+  projects = JSON.parse(localStorage.getItem(PROJECTS_KEY)  || '[]');
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+// ── EMAIL CONTEXT ─────────────────────────────────────────────
+function bindEmailContext() {
+  officeItem = Office.context.mailbox.item;
+  if (!officeItem) return;
+
+  currentEmailId = officeItem.itemId;
+  currentConvId  = officeItem.conversationId;
+
+  // Subject
+  document.getElementById('email-subject').textContent =
+    officeItem.subject || '(Sin asunto)';
+
+  // From
+  const from = officeItem.from;
+  document.getElementById('email-from').innerHTML =
+    from ? `<span style="color:var(--text3)">De:</span> ${escHtml(from.displayName||'')} &lt;${escHtml(from.emailAddress||'')}&gt;` : '';
+
+  // Badges: Pinned (category) + flag + attachments
+  officeItem.categories.getAsync(result => {
+    const cats = result.status === Office.AsyncResultStatus.Succeeded ? result.value : [];
+    const isPinned = cats.some(c => (c.displayName||'').toLowerCase().includes('pinned') || (c.displayName||'').toLowerCase().includes('anclado'));
+    
+    officeItem.getAttachmentsAsync(r2 => {
+      const hasAttach = r2.status === Office.AsyncResultStatus.Succeeded && r2.value.length > 0;
+      const flagStatus = officeItem.flag ? officeItem.flag.status : 'notFlagged';
+      const isFlagged  = flagStatus === 'flagged';
+
+      const badges = document.getElementById('email-badges');
+      badges.innerHTML = '';
+      if (isPinned)    badges.innerHTML += `<span class="badge badge-pinned">📌 Pinned</span>`;
+      if (isFlagged)   badges.innerHTML += `<span class="badge badge-flagged">🚩 Banderita</span>`;
+      if (hasAttach)   badges.innerHTML += `<span class="badge badge-attach">📎 Adjuntos</span>`;
+
+      // Auto-set responsibility based on email state
+      if (isPinned && isFlagged) selectResp('responsible');
+      else if (isPinned)         selectResp('followup');
+
+      // Render tasks
+      renderTasks();
+    });
+  });
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  const qc = document.getElementById('quick-create-section');
+  qc.style.display = tab === 'email' ? 'block' : 'none';
+
+  const titles = { email:'Tareas relacionadas', all:'Todas las tareas', pinned:'Tareas Pinned' };
+  document.getElementById('tasks-title').textContent = titles[tab];
+
+  renderTasks();
+}
+
+// ── RENDER TASKS ──────────────────────────────────────────────
+function renderTasks() {
+  loadData();
+  let list = [...tasks];
+
+  if (currentTab === 'email') {
+    // Show tasks linked to this email OR this conversation
+    list = list.filter(t =>
+      t.emailId === currentEmailId ||
+      (t.conversationId && t.conversationId === currentConvId)
+    );
+  } else if (currentTab === 'pinned') {
+    list = list.filter(t => t.resp === 'followup' || t.resp === 'responsible');
+  }
+  // 'all' shows everything, sorted by date desc
+  list.sort((a,b) => (b.created||0) - (a.created||0));
+
+  document.getElementById('tasks-count').textContent = list.length;
+  const container = document.getElementById('task-list-inner');
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-msg">
+      ${currentTab === 'email'
+        ? '📭 No hay tareas para este email.<br>Usa el formulario de arriba para crear una.'
+        : '📭 No hay tareas todavía.'}
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  list.forEach(t => container.appendChild(buildTaskItem(t)));
+}
+
+function buildTaskItem(t) {
+  const div = document.createElement('div');
+  const isCurrent = t.emailId === currentEmailId;
+  div.className = `task-item${t.status==='done'?' done':''}${isCurrent?' is-current-email':''}`;
+
+  const proj   = projects.find(p => p.id === t.project);
+  const stMap  = { pending:'pending', 'in-progress':'progress', done:'done-chip' };
+  const stLabel= { pending:'⏳ Pendiente','in-progress':'🔄 En progreso', done:'✅ Hecho' };
+  const rMap   = { followup:'followup', responsible:'responsible' };
+
+  div.innerHTML = `
+    <div class="ti-top">
+      <div class="ti-check ${t.status==='done'?'checked':''}" onclick="toggleTask('${t.id}',event)">
+        ${t.status==='done'?'✓':''}
+      </div>
+      <div class="ti-name">${escHtml(t.name)}</div>
+    </div>
+    <div class="ti-icons">
+      <div class="ti-priority p${t.priority||3}">${t.priority||3}</div>
+      ${proj?`<span class="ti-chip" style="color:${proj.color};border-color:${proj.color}40;background:${proj.color}18">${escHtml(proj.name)}</span>`:''}
+      <span class="ti-chip ${stMap[t.status]||'pending'}">${stLabel[t.status]||'⏳ Pendiente'}</span>
+      ${t.resp&&t.resp!=='none'?`<span class="ti-chip ${rMap[t.resp]||''}">${t.resp==='followup'?'👁️':'🙋'}</span>`:''}
+      ${isCurrent?`<span class="ti-chip email">📧 Este email</span>`:''}
+    </div>`;
+  return div;
+}
+
+function toggleTask(id, e) {
+  e.stopPropagation();
+  loadData();
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  t.status = t.status === 'done' ? 'pending' : 'done';
+  saveData();
+  renderTasks();
+}
+
+// ── QUICK CREATE ──────────────────────────────────────────────
+function selectResp(r) {
+  currentResp = r;
+  document.getElementById('resp-followup').className    = 'resp-chip' + (r==='followup'?' active-followup':'');
+  document.getElementById('resp-responsible').className = 'resp-chip' + (r==='responsible'?' active-responsible':'');
+}
+
+function populateProjectSelect() {
+  const sel = document.getElementById('q-project');
+  const projs = JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
+  sel.innerHTML = '<option value="">Sin proyecto</option>';
+  projs.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = p.name;
+    sel.appendChild(o);
+  });
+}
+
+function createTaskFromEmail() {
+  if (!officeItem) return;
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+
+  loadData();
+
+  // Check duplicate
+  const already = tasks.find(t => t.emailId === currentEmailId);
+  if (already) {
+    showFlash('ℹ️ Ya existe una tarea para este email');
+    btn.disabled = false;
+    return;
+  }
+
+  const task = {
+    id: 'task_' + Date.now(),
+    name: officeItem.subject || '(Sin asunto)',
+    desc: `Email de: ${officeItem.from ? officeItem.from.displayName : ''}`,
+    emailId: currentEmailId,
+    emailSubject: officeItem.subject,
+    emailFrom: officeItem.from ? officeItem.from.emailAddress : '',
+    conversationId: currentConvId,
+    resp: currentResp,
+    priority: parseInt(document.getElementById('q-priority').value) || 3,
+    status: 'pending',
+    project: document.getElementById('q-project').value,
+    category: 'Email',
+    due: '',
+    assignee: '',
+    followupDays: 7,
+    vendor: '',
+    created: Date.now(),
+    lastActivity: new Date().toISOString(),
+    source: 'outlook-addin'
+  };
+
+  tasks.unshift(task);
+  saveData();
+  showFlash('✅ Tarea creada correctamente');
+  renderTasks();
+  btn.disabled = false;
+}
+
+function showFlash(msg) {
+  const f = document.getElementById('success-flash');
+  f.textContent = msg;
+  f.style.display = 'block';
+  setTimeout(() => f.style.display = 'none', 3000);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
