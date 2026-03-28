@@ -36,11 +36,14 @@
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
 /* ── TOP BAR ── */
-.topbar{background:var(--surface);border-bottom:1.5px solid var(--border2);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.topbar{background:var(--surface);border-bottom:2px solid var(--border2);padding:8px 12px 0;display:flex;flex-direction:column;gap:0;flex-shrink:0}
+.topbar-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:6px}
+.topbar-row2{display:flex;align-items:center;gap:6px;padding-bottom:8px}
 .topbar-logo{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px;flex-shrink:0}
 .topbar-logo span{color:var(--accent)}
-.topbar-tabs{display:flex;gap:5px;flex:1;min-width:0}
-.topbar-tab{padding:5px 10px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);transition:all .12s;border:1.5px solid transparent;white-space:nowrap}
+.topbar-byline{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.3px;white-space:nowrap;opacity:.7}
+.topbar-tabs{display:flex;gap:5px;flex-wrap:nowrap}
+.topbar-tab{padding:4px 10px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);transition:all .12s;border:1.5px solid transparent;white-space:nowrap}
 .topbar-tab.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(139,126,255,.35)}
 .topbar-tab:hover:not(.active){color:var(--text2);border-color:var(--border)}
 .topbar-controls{display:flex;align-items:center;gap:5px;flex-shrink:0}
@@ -189,7 +192,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 /* ── TRANSITIONS ── */
-body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
+body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
 .q-select,.q-input,.resp-chip,.followup-chip,.btn-create,.success-flash,
 .badge,.ti-chip,.ti-priority,.tasks-count,.theme-toggle,.lang-btn,
 .modal-sheet,.modal-input,.modal-select,.modal-textarea,
@@ -200,32 +203,39 @@ body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="topbar-logo">Task<span>Flow</span></div>
-  <div class="topbar-tabs">
-    <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')" data-i18n="tab_email">—</div>
-    <div class="topbar-tab" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">—</div>
-    <div class="topbar-tab" id="tab-pinned" onclick="switchTab('pinned')" data-i18n="tab_pinned">—</div>
-  </div>
-  <div class="topbar-controls">
-    <!-- LANG SELECTOR -->
-    <div class="lang-selector" id="lang-selector">
-      <button class="lang-btn" onclick="toggleLangDropdown()" id="lang-btn" title="Language / Idioma">
-        <span class="lang-flag" id="lang-flag">🏳️</span>
-        <span class="lang-code" id="lang-code">CA</span>
-      </button>
-      <div class="lang-dropdown" id="lang-dropdown">
-        <div class="lang-option" onclick="setLang('ca')">
-          <span class="lo-flag">🇪🇸</span><span class="lo-name">Català</span>
-        </div>
-        <div class="lang-option" onclick="setLang('es')">
-          <span class="lo-flag">🇪🇸</span><span class="lo-name">Castellano</span>
-        </div>
-        <div class="lang-option" onclick="setLang('en')">
-          <span class="lo-flag">🇬🇧</span><span class="lo-name">English</span>
+  <!-- FILA 1: logo + controls -->
+  <div class="topbar-row1">
+    <div class="topbar-logo">Task<span>Flow</span></div>
+    <div class="topbar-controls">
+      <!-- LANG SELECTOR -->
+      <div class="lang-selector" id="lang-selector">
+        <button class="lang-btn" onclick="toggleLangDropdown()" id="lang-btn" title="Language / Idioma">
+          <span class="lang-flag" id="lang-flag">🏳️</span>
+          <span class="lang-code" id="lang-code">CA</span>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+          <div class="lang-option" onclick="setLang('ca')">
+            <span class="lo-flag">🇪🇸</span><span class="lo-name">Català</span>
+          </div>
+          <div class="lang-option" onclick="setLang('es')">
+            <span class="lo-flag">🇪🇸</span><span class="lo-name">Castellano</span>
+          </div>
+          <div class="lang-option" onclick="setLang('en')">
+            <span class="lo-flag">🇬🇧</span><span class="lo-name">English</span>
+          </div>
         </div>
       </div>
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
     </div>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+  <!-- FILA 2: byline + tabs -->
+  <div class="topbar-row2">
+    <span class="topbar-byline">by Xavi Croix</span>
+    <div class="topbar-tabs">
+      <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')" data-i18n="tab_email">—</div>
+      <div class="topbar-tab" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">—</div>
+      <div class="topbar-tab" id="tab-pinned" onclick="switchTab('pinned')" data-i18n="tab_pinned">—</div>
+    </div>
   </div>
 </div>
 
