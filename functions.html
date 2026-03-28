@@ -3,69 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+  <script src="taskflow-db.js"></script>
   <script>
   // ══════════════════════════════════════════════════════
   // TASKFLOW FUNCTIONS FILE
   // Handles ribbon button commands that run without UI
   // ══════════════════════════════════════════════════════
 
-  Office.onReady(() => {});
+  Office.onReady(() => {
+    // Pre-open IndexedDB so quickAddTask is fast
+    TaskFlowDB.init().catch(() => {});
+  });
 
   // ── quickAddTask ───────────────────────────────────────
   // Called when user clicks "＋ Añadir tarea" in the ribbon.
-  // Reads the current email and saves a task to localStorage
+  // Reads the current email, saves a task to IndexedDB,
   // then shows a notification in the reading pane.
-  function quickAddTask(event) {
-    const item = Office.context.mailbox.item;
-
-    // Build task object from current email
-    const task = {
-      id: 'task_' + Date.now(),
-      name: item.subject || '(Sin asunto)',
-      desc: '',
-      emailId: item.itemId,
-      emailSubject: item.subject,
-      emailFrom: item.from ? item.from.emailAddress : '',
-      resp: 'followup',       // Pinned = followup by default
-      priority: 3,
-      status: 'pending',
-      project: '',
-      category: 'Email',
-      due: '',
-      assignee: '',
-      followupDays: 7,
-      vendor: '',
-      created: Date.now(),
-      lastActivity: new Date().toISOString(),
-      source: 'outlook-addin-quick'
-    };
-
-    // Save to localStorage (shared with the main TaskFlow webapp
-    // if opened in the same browser profile)
+  async function quickAddTask(event) {
     try {
-      const existing = JSON.parse(localStorage.getItem('taskflow_tasks') || '[]');
-      // Avoid duplicates by emailId
-      const alreadyExists = existing.some(t => t.emailId === task.emailId);
-      if (!alreadyExists) {
-        existing.unshift(task);
-        localStorage.setItem('taskflow_tasks', JSON.stringify(existing));
-        showNotification('✅ Tarea añadida', `"${task.name.slice(0, 50)}" guardada en TaskFlow.`, 'informational');
-      } else {
-        showNotification('ℹ️ Ya existe', 'Este email ya tiene una tarea en TaskFlow.', 'informational');
+      await TaskFlowDB.init();
+      const item = Office.context.mailbox.item;
+
+      // Check duplicate
+      const exists = await TaskFlowDB.taskExistsForEmail(item.itemId);
+      if (exists) {
+        showNotification('ℹ️ Ya existe', 'Este email ya tiene una tarea en TaskFlow.');
+        event.completed();
+        return;
       }
+
+      // Build task object from current email
+      const task = {
+        id: 'task_' + Date.now(),
+        name: item.subject || '(Sin asunto)',
+        desc: '',
+        emailId: item.itemId,
+        emailSubject: item.subject,
+        emailFrom: item.from ? item.from.emailAddress : '',
+        resp: 'followup',
+        priority: 3,
+        status: 'pending',
+        project: '',
+        category: 'Email',
+        due: '',
+        assignee: '',
+        followupDays: 7,
+        vendor: '',
+        created: Date.now(),
+        lastActivity: new Date().toISOString(),
+        source: 'outlook-addin-quick'
+      };
+
+      await TaskFlowDB.putTask(task);
+      showNotification('✅ Tarea añadida', `"${task.name.slice(0, 50)}" guardada en TaskFlow.`);
     } catch(e) {
-      showNotification('❌ Error', 'No se pudo guardar la tarea: ' + e.message, 'errorMessage');
+      showNotification('❌ Error', 'No se pudo guardar la tarea: ' + e.message, true);
     }
 
     event.completed();
   }
 
-  function showNotification(title, message, type) {
-    Office.context.mailbox.item.notificationMessages.addAsync('taskflow', {
-      type: Office.MailboxEnums.ItemNotificationMessageType[type] || 'informationalMessage',
+  function showNotification(title, message, isError) {
+    Office.context.mailbox.item.notificationMessages.replaceAsync('taskflow', {
+      type: isError
+        ? Office.MailboxEnums.ItemNotificationMessageType.ErrorMessage
+        : Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
       message: `${title}: ${message}`,
       icon: 'Icon.16',
-      persistent: false
+      persistent: !!isError
     });
   }
   </script>
