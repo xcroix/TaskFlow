@@ -824,48 +824,38 @@ function toggleTheme() {
 
 // Apply saved theme + lang immediately (before Office.onReady) to prevent flash
 (function() {
-  const savedTheme = localStorage.getItem(THEME_KEY);
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-  }
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
   const savedLang = localStorage.getItem(LANG_KEY) || 'ca';
-  currentLang = savedLang;
-  const meta = LANG_META[savedLang] || LANG_META.ca;
-  document.documentElement.lang = meta.htmlLang;
-  document.getElementById('lang-flag').textContent = meta.flag;
-  document.getElementById('lang-code').textContent = meta.code;
+  // applyLang tradueix tota la UI immediatament, sense esperar Office.onReady
+  applyLang(savedLang);
 })();
 
 // ── INIT ──────────────────────────────────────────────────────
 Office.onReady(async (info) => {
-  if (info.host !== Office.HostType.Outlook) return;
+  // Inicialitzar la BD sempre, independentment del host
   await TaskFlowDB.init();
-
-  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
-  applyTheme(savedTheme);
-
-  const savedLang = localStorage.getItem(LANG_KEY) || 'ca';
-  // Full render: build all dynamic elements and translate everything
-  applyLang(savedLang);
-
   await loadData();
-  await syncFromRoaming();
-  // Inicialitzar placeholders de projecte
-  const qProjInp = document.getElementById('q-project-input');
-  if (qProjInp) qProjInp.placeholder = t('project_placeholder');
-  const eProjInp = document.getElementById('edit-project-input');
-  if (eProjInp) eProjInp.placeholder = t('project_placeholder');
-  // Inicialitzar followup default
+
+  // Inicialitzar valors per defecte dels inputs
   const fInp = document.getElementById('followup-days-input');
   if (fInp) fInp.value = currentFollowupDays;
-  bindEmailContext();
 
-  Office.context.mailbox.addHandlerAsync(
-    Office.EventType.ItemChanged,
-    () => bindEmailContext()
-  );
+  // Sincronitzar i lligar context d'email només si estem a Outlook
+  if (info.host === Office.HostType.Outlook) {
+    await syncFromRoaming();
+    bindEmailContext();
+    Office.context.mailbox.addHandlerAsync(
+      Office.EventType.ItemChanged,
+      () => bindEmailContext()
+    );
+  } else {
+    // Mode fora d'Outlook: mostrar totes les tasques
+    renderTasks();
+  }
 });
 
 async function loadData() {
