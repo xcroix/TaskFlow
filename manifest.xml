@@ -8,13 +8,13 @@
 
   <!-- ═══════════════════════════════════════════════════════
        TASKFLOW OUTLOOK ADD-IN MANIFEST
-       Versión: 1.0.0
+       Versión: 1.0.1
        Compatible: Outlook Web (M365), Outlook Desktop 2016+
        Instalación: Sideload manual desde Outlook Web Settings
   ════════════════════════════════════════════════════════ -->
 
   <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.1.0</Version>
   <ProviderName>TaskFlow</ProviderName>
   <DefaultLocale>es-ES</DefaultLocale>
   <DisplayName DefaultValue="TaskFlow"/>
@@ -25,8 +25,7 @@
   <SupportUrl DefaultValue="https://github.com"/>
 
   <AppDomains>
-    <!-- Add your hosting domain here when you deploy -->
-    <AppDomain>https://localhost</AppDomain>
+    <AppDomain>https://xcroix.github.io</AppDomain>
   </AppDomains>
 
   <Hosts>
@@ -44,7 +43,7 @@
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://xcroix.github.io/TaskFlow/panel.html"/>
-        <RequestedHeight>550</RequestedHeight>
+        <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
   </FormSettings>
@@ -56,7 +55,7 @@
   </Rule>
   <DisableEntityHighlighting>false</DisableEntityHighlighting>
 
-  <!-- VersionOverrides: defines ribbon button + task pane for modern Outlook -->
+  <!-- VersionOverrides v1.0: ribbon buttons + task pane -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
     <Requirements>
       <bt:Sets DefaultMinVersion="1.3">
@@ -90,10 +89,7 @@
                     <bt:Image size="80" resid="Icon.80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>TaskFlowPanel</TaskpaneId>
                     <SourceLocation resid="TaskPane.Url"/>
-                    <Title resid="TaskPane.Title"/>
-                    <SupportsPinning>true</SupportsPinning>
                   </Action>
                 </Control>
 
@@ -122,7 +118,6 @@
       </Host>
     </Hosts>
 
-    <!-- ── RESOURCES -->
     <Resources>
       <bt:Images>
         <bt:Image id="Icon.16" DefaultValue="https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f4cb.png"/>
@@ -130,7 +125,6 @@
         <bt:Image id="Icon.80" DefaultValue="https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f4cb.png"/>
       </bt:Images>
       <bt:Urls>
-        <!-- ⚠️  Replace YOUR_HOST with your actual hosting URL -->
         <bt:Url id="FunctionFile.Url" DefaultValue="https://xcroix.github.io/TaskFlow/functions.html"/>
         <bt:Url id="TaskPane.Url"     DefaultValue="https://xcroix.github.io/TaskFlow/panel.html"/>
       </bt:Urls>
@@ -145,6 +139,90 @@
         <bt:String id="QuickAdd.Tooltip"   DefaultValue="Crea una tarea rápida a partir de este email sin abrir el panel"/>
       </bt:LongStrings>
     </Resources>
+
+    <!-- VersionOverrides v1.1 (nested): adds pinning support for modern Outlook -->
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.3">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <DesktopFormFactor>
+
+            <FunctionFile resid="FunctionFile.Url"/>
+
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="TaskFlowGroup">
+                  <Label resid="Group.Label"/>
+
+                  <Control xsi:type="Button" id="OpenPanelButton">
+                    <Label resid="OpenPanel.Label"/>
+                    <Supertip>
+                      <Title resid="OpenPanel.Label"/>
+                      <Description resid="OpenPanel.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16"/>
+                      <bt:Image size="32" resid="Icon.32"/>
+                      <bt:Image size="80" resid="Icon.80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <SourceLocation resid="TaskPane.Url"/>
+                      <SupportsPinning>true</SupportsPinning>
+                    </Action>
+                  </Control>
+
+                  <Control xsi:type="Button" id="QuickAddButton">
+                    <Label resid="QuickAdd.Label"/>
+                    <Supertip>
+                      <Title resid="QuickAdd.Label"/>
+                      <Description resid="QuickAdd.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16"/>
+                      <bt:Image size="32" resid="Icon.32"/>
+                      <bt:Image size="80" resid="Icon.80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>quickAddTask</FunctionName>
+                    </Action>
+                  </Control>
+
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+
+          </DesktopFormFactor>
+        </Host>
+      </Hosts>
+
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon.16" DefaultValue="https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f4cb.png"/>
+          <bt:Image id="Icon.32" DefaultValue="https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f4cb.png"/>
+          <bt:Image id="Icon.80" DefaultValue="https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/72x72/1f4cb.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="FunctionFile.Url" DefaultValue="https://xcroix.github.io/TaskFlow/functions.html"/>
+          <bt:Url id="TaskPane.Url"     DefaultValue="https://xcroix.github.io/TaskFlow/panel.html"/>
+        </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="Group.Label"       DefaultValue="TaskFlow"/>
+          <bt:String id="OpenPanel.Label"   DefaultValue="📋 Ver tareas"/>
+          <bt:String id="QuickAdd.Label"    DefaultValue="＋ Añadir tarea"/>
+          <bt:String id="TaskPane.Title"    DefaultValue="TaskFlow"/>
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="OpenPanel.Tooltip"  DefaultValue="Abre el panel de TaskFlow con las tareas relacionadas con este email"/>
+          <bt:String id="QuickAdd.Tooltip"   DefaultValue="Crea una tarea rápida a partir de este email sin abrir el panel"/>
+        </bt:LongStrings>
+      </Resources>
+
+    </VersionOverrides>
 
   </VersionOverrides>
 </OfficeApp>
