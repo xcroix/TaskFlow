@@ -100,10 +100,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .q-select:focus,.q-input:focus{border-color:var(--accent)}
 .q-select option{background:var(--surface3);color:var(--text)}
 .q-input::placeholder{color:var(--text3);font-weight:400}
-.followup-chips{display:flex;gap:5px;flex-wrap:wrap}
-.followup-chip{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);transition:all .12s;white-space:nowrap}
-.followup-chip.active{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
-.followup-chip:hover:not(.active){color:var(--text);border-color:var(--border2)}
+/* followup chips removed - replaced by number input */
+.followup-input-wrap{display:flex;align-items:center;gap:8px}
+.followup-num{background:var(--surface3);border:1.5px solid var(--border2);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;font-weight:700;outline:none;width:72px;text-align:center;transition:border-color .12s}
+.followup-num:focus{border-color:var(--blue)}
+.followup-num-label{font-size:12px;color:var(--text3);font-weight:600}
 .resp-chips{display:flex;gap:5px;margin-bottom:6px}
 .resp-chip{flex:1;padding:7px 6px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);text-align:center;transition:all .12s}
 .resp-chip.active-me{border-color:var(--green);background:var(--green-dim);color:var(--green)}
@@ -261,16 +262,25 @@ body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
     </div>
     <div class="field-group" style="margin:0">
       <div class="field-label" data-i18n="lbl_project">—</div>
-      <select class="q-select" id="q-project"></select>
+      <div class="person-input-wrap">
+        <input class="q-input" id="q-project-input" type="text"
+          oninput="onProjectInput('q', this.value)" onblur="hideProjectDropdown('q')"
+          autocomplete="off">
+        <div class="person-dropdown" id="q-project-dropdown"></div>
+      </div>
     </div>
   </div>
 
   <div class="field-group">
     <div class="field-label">
       👁️ <span data-i18n="lbl_followup">—</span>
-      <span class="field-label-hint" data-i18n="hint_followup">—</span>
     </div>
-    <div class="followup-chips" id="followup-chips"></div>
+    <div class="followup-input-wrap">
+      <input class="followup-num" id="followup-days-input" type="number"
+        min="0" max="365" value="2"
+        oninput="currentFollowupDays=parseInt(this.value)||0">
+      <span class="followup-num-label" data-i18n="followup_days_label">—</span>
+    </div>
   </div>
 
   <div class="field-group">
@@ -352,7 +362,12 @@ body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
     <div class="modal-row modal-field">
       <div>
         <div class="modal-label" data-i18n="lbl_project">—</div>
-        <select class="modal-select" id="edit-project"></select>
+        <div class="person-input-wrap">
+          <input class="modal-input" id="edit-project-input" type="text"
+            oninput="onProjectInput('edit', this.value)" onblur="hideProjectDropdown('edit')"
+            autocomplete="off">
+          <div class="person-dropdown" id="edit-project-dropdown"></div>
+        </div>
       </div>
       <div>
         <div class="modal-label" data-i18n="lbl_category">—</div>
@@ -374,9 +389,13 @@ body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
     <div class="modal-field">
       <div class="modal-label">
         👁️ <span data-i18n="lbl_followup">—</span>
-        <span class="modal-label-desc" data-i18n="hint_followup">—</span>
       </div>
-      <div class="followup-chips" id="edit-followup-chips"></div>
+      <div class="followup-input-wrap">
+        <input class="followup-num" id="edit-followup-days-input" type="number"
+          min="0" max="365" value="2"
+          oninput="editFollowupDays=parseInt(this.value)||0">
+        <span class="followup-num-label" data-i18n="followup_days_label">—</span>
+      </div>
     </div>
 
     <div class="modal-field">
@@ -426,7 +445,7 @@ const I18N = {
     lbl_priority:    'Prioritat',
     lbl_project:     'Projecte',
     lbl_followup:    'Seguiment',
-    hint_followup:   'en quants dies cal fer-lo?',
+    hint_followup:   '(0 = sense seguiment)',
     lbl_responsible: 'Responsable',
     hint_responsible:'qui ha d\'actuar?',
     resp_me:         '👤 Jo mateix',
@@ -459,7 +478,8 @@ const I18N = {
     status_progress: '🔄 En curs',
     status_done:     '✅ Fet',
     // Followup chips
-    followup_chips: ['3 dies','1 setmana','2 setmanes','1 mes','Sense'],
+    followup_days_label: 'dies (0 = sense seguiment)',
+    project_placeholder: 'Nom del projecte...',
     // Chips (task list)
     chip_me:       'Jo',
     chip_delegated:'Delegat',
@@ -501,7 +521,7 @@ const I18N = {
     lbl_priority:    'Prioridad',
     lbl_project:     'Proyecto',
     lbl_followup:    'Seguimiento',
-    hint_followup:   '¿en cuántos días hay que hacerlo?',
+    hint_followup:   '(0 = sin seguimiento)',
     lbl_responsible: 'Responsable',
     hint_responsible:'¿quién debe actuar?',
     resp_me:         '👤 Yo mismo',
@@ -529,7 +549,8 @@ const I18N = {
     status_pending:  '⏳ Pendiente',
     status_progress: '🔄 En curso',
     status_done:     '✅ Hecho',
-    followup_chips: ['3 días','1 semana','2 semanas','1 mes','Sin seguim.'],
+    followup_days_label: 'días (0 = sin seguimiento)',
+    project_placeholder: 'Nombre del proyecto...',
     chip_me:       'Yo',
     chip_delegated:'Delegado',
     chip_email:    'Este email',
@@ -566,7 +587,7 @@ const I18N = {
     lbl_priority:    'Priority',
     lbl_project:     'Project',
     lbl_followup:    'Follow-up',
-    hint_followup:   'in how many days?',
+    hint_followup:   '(0 = no follow-up)',
     lbl_responsible: 'Owner',
     hint_responsible:'who should act?',
     resp_me:         '👤 Myself',
@@ -594,7 +615,8 @@ const I18N = {
     status_pending:  '⏳ Pending',
     status_progress: '🔄 In progress',
     status_done:     '✅ Done',
-    followup_chips: ['3 days','1 week','2 weeks','1 month','None'],
+    followup_days_label: 'days (0 = no follow-up)',
+    project_placeholder: 'Project name...',
     chip_me:       'Me',
     chip_delegated:'Delegated',
     chip_email:    'This email',
@@ -627,7 +649,6 @@ const LANG_META = {
 };
 
 const LANG_KEY  = 'taskflow_lang';
-const FOLLOWUP_DAYS_VALUES = [3, 7, 14, 30, 0];
 
 let currentLang = 'ca';
 
@@ -663,14 +684,20 @@ function applyLang(lang) {
   if (themeBtn) themeBtn.title = isDark ? t('theme_to_light') : t('theme_to_dark');
 
   // Rebuild dynamic elements that depend on language
-  buildFollowupChips('followup-chips',     currentFollowupDays, selectFollowupDays);
-  buildFollowupChips('edit-followup-chips', editFollowupDays,   selectEditFollowupDays);
   buildPriorityOptions('q-priority',    parseInt(document.getElementById('q-priority')?.value) || 3);
   buildPriorityOptions('edit-priority', parseInt(document.getElementById('edit-priority')?.value) || 3);
   buildStatusOptions('edit-status', document.getElementById('edit-status')?.value || 'pending');
-  populateProjectSelects();
 
-  // Placeholders
+  // Followup labels
+  document.querySelectorAll('[data-i18n="followup_days_label"]').forEach(el => el.textContent = t('followup_days_label'));
+
+  // Project placeholders
+  const qProj = document.getElementById('q-project-input');
+  if (qProj) qProj.placeholder = t('project_placeholder');
+  const eProj = document.getElementById('edit-project-input');
+  if (eProj) eProj.placeholder = t('project_placeholder');
+
+  // Person placeholders
   const qPerson = document.getElementById('q-person-name');
   if (qPerson) qPerson.placeholder = t('person_placeholder');
   const ePerson = document.getElementById('edit-person-name');
@@ -731,12 +758,7 @@ function buildStatusOptions(selectId, selectedVal) {
   ).join('');
 }
 
-function buildFollowupChips(containerId, activeDays, clickFn) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const chips = t('followup_chips');
-  container.innerHTML = FOLLOWUP_DAYS_VALUES.map((days, i) =>
-    `<div class="followup-chip${activeDays === days ? ' active' : ''}"
+"
       data-days="${days}" onclick="${clickFn.name}(${days})">${chips[i]}</div>`
   ).join('');
 }
@@ -754,12 +776,14 @@ let projects         = [];
 let currentEmailId   = null;
 let currentConvId    = null;
 let currentResp      = 'me';
-let currentFollowupDays = 3;
+let currentFollowupDays = 2;
 let currentTab       = 'email';
 let officeItem       = null;
 let editingTaskId    = null;
 let editResp         = 'me';
-let editFollowupDays = 7;
+let editFollowupDays = 2;
+let currentProjectId = '';
+let editProjectId    = '';
 
 // ── PERSONS MEMORY ────────────────────────────────────────────
 function getPersons() {
@@ -822,7 +846,14 @@ Office.onReady(async (info) => {
 
   await loadData();
   await syncFromRoaming();
-  populateProjectSelects();
+  // Inicialitzar placeholders de projecte
+  const qProjInp = document.getElementById('q-project-input');
+  if (qProjInp) qProjInp.placeholder = t('project_placeholder');
+  const eProjInp = document.getElementById('edit-project-input');
+  if (eProjInp) eProjInp.placeholder = t('project_placeholder');
+  // Inicialitzar followup default
+  const fInp = document.getElementById('followup-days-input');
+  if (fInp) fInp.value = currentFollowupDays;
   bindEmailContext();
 
   Office.context.mailbox.addHandlerAsync(
@@ -1098,12 +1129,16 @@ async function toggleTask(id, e) {
   renderTasks();
 }
 
-// ── FOLLOWUP CHIPS ────────────────────────────────────────────
-function selectFollowupDays(days) {
-  currentFollowupDays = days;
-  document.querySelectorAll('#followup-chips .followup-chip').forEach(c => {
-    c.classList.toggle('active', parseInt(c.dataset.days) === days);
-  });
+// ── FOLLOWUP INPUT ───────────────────────────────────────────
+function setFollowupDays(days) {
+  currentFollowupDays = parseInt(days) || 0;
+  const inp = document.getElementById('followup-days-input');
+  if (inp) inp.value = currentFollowupDays;
+}
+function setEditFollowupDays(days) {
+  editFollowupDays = parseInt(days) || 0;
+  const inp = document.getElementById('edit-followup-days-input');
+  if (inp) inp.value = editFollowupDays;
 }
 
 // ── RESPONSABLE ───────────────────────────────────────────────
@@ -1131,20 +1166,54 @@ function hidePersonDropdown() {
   setTimeout(() => { document.getElementById('person-dropdown').style.display = 'none'; }, 150);
 }
 
-// ── POPULATE PROJECTS ─────────────────────────────────────────
-function populateProjectSelects() {
-  ['q-project', 'edit-project'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    const current = sel.value;
-    sel.innerHTML = `<option value="">${t('no_project')}</option>`;
-    projects.forEach(p => {
-      const o = document.createElement('option');
-      o.value = p.id; o.textContent = p.name;
-      sel.appendChild(o);
-    });
-    sel.value = current;
-  });
+// ── PROJECT AUTOCOMPLETE ──────────────────────────────────────
+// prefix: "q" (quick-create) o "edit" (modal)
+function onProjectInput(prefix, val) {
+  const dd = document.getElementById(prefix + '-project-dropdown');
+  const matches = projects.filter(p =>
+    p.name.toLowerCase().includes(val.toLowerCase())
+  );
+  if (!val.trim() || !matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(p =>
+    `<div class="person-option" onmousedown="selectProject('${prefix}','${escHtml(p.id)}','${escHtml(p.name)}')">${escHtml(p.name)}</div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selectProject(prefix, id, name) {
+  document.getElementById(prefix + '-project-input').value = name;
+  document.getElementById(prefix + '-project-dropdown').style.display = 'none';
+  if (prefix === 'q') currentProjectId = id;
+  else editProjectId = id;
+}
+function hideProjectDropdown(prefix) {
+  setTimeout(() => {
+    document.getElementById(prefix + '-project-dropdown').style.display = 'none';
+  }, 150);
+}
+function getProjectIdFromInput(prefix) {
+  // Retorna l'id del projecte seleccionat, o crea un nou si el nom no existeix
+  const inputId = prefix + '-project-input';
+  const inp = document.getElementById(inputId);
+  if (!inp) return '';
+  const val = inp.value.trim();
+  if (!val) return '';
+  // Buscar projecte existent per nom (case-insensitive)
+  const existing = projects.find(p => p.name.toLowerCase() === val.toLowerCase());
+  if (existing) return existing.id;
+  // Crear nou projecte
+  const newId = 'proj_' + Date.now();
+  const colors = ['#8b7eff','#00f090','#ff9d2e','#1ab8ff','#ff4f4f','#ffe033'];
+  const newProj = { id: newId, name: val, color: colors[projects.length % colors.length] };
+  TaskFlowDB.putProject(newProj);
+  projects.push(newProj);
+  return newId;
+}
+function setProjectInput(prefix, projectId) {
+  const proj = projects.find(p => p.id === projectId);
+  const inp = document.getElementById(prefix + '-project-input');
+  if (inp) inp.value = proj ? proj.name : '';
+  if (prefix === 'q') currentProjectId = projectId || '';
+  else editProjectId = projectId || '';
 }
 
 // ── CREATE TASK ───────────────────────────────────────────────
@@ -1177,10 +1246,10 @@ async function createTaskFromEmail() {
     assigneeName: personName,
     priority: parseInt(document.getElementById('q-priority').value) || 3,
     status: 'pending',
-    project: document.getElementById('q-project').value,
+    project: getProjectIdFromInput('q'),
     category: 'Email',
     due: '',
-    followupDays: currentFollowupDays,
+    followupDays: parseInt(document.getElementById('followup-days-input').value) || 0,
     vendor: '',
     created: Date.now(),
     lastActivity: new Date().toISOString(),
@@ -1215,12 +1284,11 @@ async function openEditModal(taskId) {
   // Rebuild dynamic selects with current language
   buildPriorityOptions('edit-priority', task.priority || 3);
   buildStatusOptions('edit-status', task.status || 'pending');
-  populateProjectSelects();
-  document.getElementById('edit-project').value = task.project || '';
+  setProjectInput('edit', task.project || '');
 
   // Seguiment
-  editFollowupDays = task.followupDays !== undefined ? task.followupDays : 7;
-  buildFollowupChips('edit-followup-chips', editFollowupDays, selectEditFollowupDays);
+  editFollowupDays = task.followupDays !== undefined ? task.followupDays : 2;
+  document.getElementById('edit-followup-days-input').value = editFollowupDays;
 
   // Responsable — backward compat
   let respVal = task.resp || 'me';
@@ -1259,11 +1327,7 @@ function onModalOverlayClick(e) {
   if (e.target === document.getElementById('edit-modal')) closeEditModal();
 }
 
-function selectEditFollowupDays(days) {
-  editFollowupDays = days;
-  document.querySelectorAll('#edit-followup-chips .followup-chip').forEach(c => {
-    c.classList.toggle('active', parseInt(c.dataset.days) === days);
-  });
+);
 }
 
 function selectEditResp(r) {
@@ -1304,10 +1368,10 @@ async function saveEditedTask() {
   task.desc         = document.getElementById('edit-desc').value;
   task.priority     = parseInt(document.getElementById('edit-priority').value) || 3;
   task.status       = document.getElementById('edit-status').value;
-  task.project      = document.getElementById('edit-project').value;
+  task.project      = getProjectIdFromInput('edit');
   task.resp         = editResp;
   task.assigneeName = personName;
-  task.followupDays = editFollowupDays;
+  task.followupDays = parseInt(document.getElementById('edit-followup-days-input').value) || 0;
   task.due          = document.getElementById('edit-due').value || '';
   task.category     = document.getElementById('edit-category').value || 'Email';
   task.lastActivity = new Date().toISOString();
