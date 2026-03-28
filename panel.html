@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="ca">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TaskFlow</title>
 <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+<script src="taskflow-db.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
+/* ── DARK THEME (default) ── */
+:root, :root[data-theme="dark"] {
   --bg:#08090e;--surface:#0f111a;--surface2:#181b27;--surface3:#202332;
   --border:#454a6a;--border2:#686e96;--text:#ffffff;--text2:#e0e4ff;--text3:#a0a8cc;
   --accent:#8b7eff;--accent2:#b0a6ff;--accent-dim:rgba(139,126,255,0.22);
@@ -16,17 +18,51 @@
   --red:#ff4f4f;--red-dim:rgba(255,79,79,0.16);
   --yellow:#ffe033;--blue:#1ab8ff;--blue-dim:rgba(26,184,255,0.16);
   --ms:#1a9fff;--ms-dim:rgba(26,159,255,0.18);
+  --check-done-text:#000;
+}
+/* ── LIGHT THEME ── */
+:root[data-theme="light"] {
+  --bg:#f4f5f9;--surface:#ffffff;--surface2:#eceef4;--surface3:#e2e4ed;
+  --border:#c5c9db;--border2:#a8adc6;--text:#1a1c2b;--text2:#3a3d52;--text3:#6b7094;
+  --accent:#6c5ce7;--accent2:#5a4bd1;--accent-dim:rgba(108,92,231,0.12);
+  --green:#00b368;--green-dim:rgba(0,179,104,0.12);
+  --orange:#e67e00;--orange-dim:rgba(230,126,0,0.10);
+  --red:#d43535;--red-dim:rgba(212,53,53,0.10);
+  --yellow:#c5a000;--blue:#0088cc;--blue-dim:rgba(0,136,204,0.10);
+  --ms:#0068ba;--ms-dim:rgba(0,104,186,0.12);
+  --check-done-text:#fff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
 /* ── TOP BAR ── */
-.topbar{background:var(--surface);border-bottom:1.5px solid var(--border2);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.topbar-logo{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.topbar{background:var(--surface);border-bottom:1.5px solid var(--border2);padding:8px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.topbar-logo{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px;flex-shrink:0}
 .topbar-logo span{color:var(--accent)}
-.topbar-tab{padding:5px 11px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text3);transition:all .12s;border:1.5px solid transparent}
+.topbar-tabs{display:flex;gap:5px;flex:1;min-width:0}
+.topbar-tab{padding:5px 10px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text3);transition:all .12s;border:1.5px solid transparent;white-space:nowrap}
 .topbar-tab.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(139,126,255,.35)}
 .topbar-tab:hover:not(.active){color:var(--text2);border-color:var(--border)}
+.topbar-controls{display:flex;align-items:center;gap:5px;flex-shrink:0}
+
+/* ── LANG SELECTOR ── */
+.lang-selector{position:relative}
+.lang-btn{height:30px;padding:0 9px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;display:flex;align-items:center;gap:4px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text2);transition:all .2s;white-space:nowrap}
+.lang-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.lang-btn .lang-flag{font-size:13px}
+.lang-btn .lang-code{font-size:10px;letter-spacing:.5px}
+.lang-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;z-index:300;min-width:120px;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.lang-dropdown.open{display:block;animation:fadeDown .14s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.lang-option{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:background .1s}
+.lang-option:hover{background:var(--accent-dim);color:var(--accent)}
+.lang-option.active{color:var(--accent);background:var(--accent-dim)}
+.lang-option .lo-flag{font-size:14px}
+.lang-option .lo-name{flex:1}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;flex-shrink:0;padding:0;line-height:1}
+.theme-toggle:hover{border-color:var(--accent);background:var(--accent-dim);transform:scale(1.1)}
 
 /* ── EMAIL CONTEXT CARD ── */
 .email-card{background:var(--surface);border-bottom:1.5px solid var(--border);padding:12px 14px;flex-shrink:0}
@@ -38,38 +74,65 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .badge-pinned{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(139,126,255,.35)}
 .badge-flagged{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,79,79,.35)}
 .badge-attach{background:var(--surface3);color:var(--text2);border:1px solid var(--border2)}
+.badge-linked{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,240,144,.35)}
 
-/* ── QUICK CREATE FROM EMAIL ── */
-.quick-create{padding:12px 14px;background:var(--surface2);border-bottom:1.5px solid var(--border);flex-shrink:0}
-.quick-create-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
-.quick-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.q-select{background:var(--surface3);border:1.5px solid var(--border2);border-radius:6px;padding:6px 9px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;width:100%;cursor:pointer}
-.q-select:focus{border-color:var(--accent)}
+/* ── LINKED TASK BANNER ── */
+.linked-task-banner{display:none;padding:10px 14px;background:var(--surface2);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.linked-banner-inner{display:flex;align-items:center;gap:8px;background:var(--green-dim);border:1px solid rgba(0,240,144,.3);border-radius:8px;padding:8px 10px}
+.linked-banner-icon{font-size:16px;flex-shrink:0}
+.linked-banner-text{flex:1;min-width:0}
+.linked-banner-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--green);margin-bottom:2px}
+.linked-banner-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.linked-banner-actions{display:flex;gap:5px;flex-shrink:0}
+.btn-icon{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);transition:all .12s;font-family:'Syne',sans-serif;white-space:nowrap}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.btn-icon.edit{border-color:rgba(139,126,255,.4);color:var(--accent);background:var(--accent-dim)}
+.btn-icon.edit:hover{background:var(--accent);color:#fff}
+
+/* ── QUICK CREATE ── */
+.quick-create{padding:14px;background:var(--surface2);border-bottom:1.5px solid var(--border);flex-shrink:0}
+.quick-create-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.field-group{margin-bottom:10px}
+.field-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.field-label-hint{font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text3);opacity:.85;font-style:italic}
+.quick-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.q-select,.q-input{background:var(--surface3);border:1.5px solid var(--border2);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;width:100%;cursor:pointer;transition:border-color .12s}
+.q-select:focus,.q-input:focus{border-color:var(--accent)}
 .q-select option{background:var(--surface3);color:var(--text)}
-.resp-row{display:flex;gap:5px;margin-bottom:8px}
-.resp-chip{flex:1;padding:6px 4px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);text-align:center;transition:all .12s}
-.resp-chip.active-followup{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
-.resp-chip.active-responsible{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
-.resp-chip:hover{border-color:var(--border2);color:var(--text)}
-.btn-create{width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.q-input::placeholder{color:var(--text3);font-weight:400}
+.followup-chips{display:flex;gap:5px;flex-wrap:wrap}
+.followup-chip{padding:5px 10px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);transition:all .12s;white-space:nowrap}
+.followup-chip.active{border-color:var(--blue);background:var(--blue-dim);color:var(--blue)}
+.followup-chip:hover:not(.active){color:var(--text);border-color:var(--border2)}
+.resp-chips{display:flex;gap:5px;margin-bottom:6px}
+.resp-chip{flex:1;padding:7px 6px;border-radius:6px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);text-align:center;transition:all .12s}
+.resp-chip.active-me{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.resp-chip.active-other{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.resp-chip:hover:not(.active-me):not(.active-other){color:var(--text);border-color:var(--border2)}
+.person-input-wrap{position:relative}
+.person-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--accent);border-top:none;border-radius:0 0 6px 6px;z-index:100;max-height:120px;overflow-y:auto;display:none}
+.person-option{padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:background .1s}
+.person-option:hover{background:var(--accent-dim);color:var(--accent)}
+.btn-create{width:100%;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px}
 .btn-create:hover{background:var(--accent2);transform:translateY(-1px)}
 .btn-create:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.success-flash{background:var(--green-dim);border:1px solid rgba(0,240,144,.35);color:var(--green);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:700;text-align:center;display:none;margin-top:6px}
+.success-flash{background:var(--green-dim);border:1px solid rgba(0,240,144,.35);color:var(--green);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:700;text-align:center;display:none;margin-top:8px}
 
 /* ── TASK LIST ── */
 .tasks-area{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 .tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .tasks-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
 .tasks-count{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);background:var(--surface3);padding:1px 7px;border-radius:20px;border:1px solid var(--border2)}
-
 .task-item{background:var(--surface);border:1.5px solid var(--border2);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .12s;position:relative}
 .task-item:hover{border-color:var(--accent);background:var(--surface2)}
+.task-item:hover .ti-edit-hint{opacity:1}
+.ti-edit-hint{position:absolute;top:8px;right:8px;font-size:11px;opacity:0;transition:opacity .15s;color:var(--accent2);pointer-events:none}
 .task-item.is-current-email{border-color:var(--accent);border-left:3px solid var(--accent)}
 .task-item.done{opacity:.5}
 .task-item.done .ti-name{text-decoration:line-through;color:var(--text3)}
 .ti-top{display:flex;align-items:flex-start;gap:8px}
 .ti-check{width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .12s}
-.ti-check:hover{border-color:var(--green)}.ti-check.checked{background:var(--green);border-color:var(--green);color:#000}
+.ti-check:hover{border-color:var(--green)}.ti-check.checked{background:var(--green);border-color:var(--green);color:var(--check-done-text)}
 .ti-name{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3}
 .ti-icons{display:flex;align-items:center;gap:4px;margin-top:6px;flex-wrap:wrap}
 .ti-priority{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;border:1.5px solid;flex-shrink:0}
@@ -87,14 +150,49 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .ti-chip.progress{background:var(--blue-dim);color:var(--blue);border-color:rgba(26,184,255,.3)}
 .empty-msg{color:var(--text3);font-size:12px;text-align:center;padding:30px 10px;line-height:1.6}
 
+/* ── EDIT MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-sheet{background:var(--surface);border-top:2px solid var(--accent);border-radius:14px 14px 0 0;padding:16px 14px 20px;width:100%;max-height:90vh;overflow-y:auto;flex-shrink:0}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-title{font-size:14px;font-weight:800;color:var(--text)}
+.modal-close{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);transition:all .12s}
+.modal-close:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.modal-email-origin{display:none;background:var(--ms-dim);border:1px solid rgba(26,159,255,.3);border-radius:7px;padding:7px 10px;margin-bottom:12px;gap:6px;align-items:flex-start}
+.modal-email-origin.visible{display:flex}
+.modal-email-origin-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.modal-email-origin-text{flex:1;min-width:0}
+.modal-email-origin-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ms);margin-bottom:2px}
+.modal-email-origin-subject{font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.modal-field{margin-bottom:12px}
+.modal-label{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.modal-label-desc{font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text3);font-style:italic}
+.modal-input,.modal-select,.modal-textarea{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:8px 10px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;width:100%;transition:border-color .12s}
+.modal-input:focus,.modal-select:focus,.modal-textarea:focus{border-color:var(--accent)}
+.modal-select option{background:var(--surface2);color:var(--text)}
+.modal-textarea{resize:vertical;min-height:60px;font-weight:400;line-height:1.5}
+.modal-input::placeholder,.modal-textarea::placeholder{color:var(--text3);font-weight:400}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.btn-save{flex:1;padding:9px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-save:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-delete{padding:9px 14px;background:var(--red-dim);color:var(--red);border:1.5px solid rgba(255,79,79,.3);border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-delete:hover{background:var(--red);color:#fff;border-color:var(--red)}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-
 /* ── LOADING ── */
 .loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px;color:var(--text3);font-size:12px}
 .dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:blink 1.2s infinite}
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes blink{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+/* ── TRANSITIONS ── */
+body,.topbar,.email-card,.quick-create,.tasks-area,.task-item,.ti-check,
+.q-select,.q-input,.resp-chip,.followup-chip,.btn-create,.success-flash,
+.badge,.ti-chip,.ti-priority,.tasks-count,.theme-toggle,.lang-btn,
+.modal-sheet,.modal-input,.modal-select,.modal-textarea,
+.linked-task-banner,.btn-icon{transition:background .2s,color .2s,border-color .2s}
 </style>
 </head>
 <body>
@@ -102,166 +200,811 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 <!-- TOP BAR -->
 <div class="topbar">
   <div class="topbar-logo">Task<span>Flow</span></div>
-  <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')">Este email</div>
-  <div class="topbar-tab" id="tab-all" onclick="switchTab('all')">Todas</div>
-  <div class="topbar-tab" id="tab-pinned" onclick="switchTab('pinned')">Pinned</div>
+  <div class="topbar-tabs">
+    <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')" data-i18n="tab_email">—</div>
+    <div class="topbar-tab" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">—</div>
+    <div class="topbar-tab" id="tab-pinned" onclick="switchTab('pinned')" data-i18n="tab_pinned">—</div>
+  </div>
+  <div class="topbar-controls">
+    <!-- LANG SELECTOR -->
+    <div class="lang-selector" id="lang-selector">
+      <button class="lang-btn" onclick="toggleLangDropdown()" id="lang-btn" title="Language / Idioma">
+        <span class="lang-flag" id="lang-flag">🏳️</span>
+        <span class="lang-code" id="lang-code">CA</span>
+      </button>
+      <div class="lang-dropdown" id="lang-dropdown">
+        <div class="lang-option" onclick="setLang('ca')">
+          <span class="lo-flag">🇪🇸</span><span class="lo-name">Català</span>
+        </div>
+        <div class="lang-option" onclick="setLang('es')">
+          <span class="lo-flag">🇪🇸</span><span class="lo-name">Castellano</span>
+        </div>
+        <div class="lang-option" onclick="setLang('en')">
+          <span class="lo-flag">🇬🇧</span><span class="lo-name">English</span>
+        </div>
+      </div>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
 </div>
 
 <!-- EMAIL CONTEXT CARD -->
 <div class="email-card" id="email-card">
-  <div class="email-card-label">Email activo</div>
-  <div class="email-subject" id="email-subject">Cargando...</div>
+  <div class="email-card-label" data-i18n="email_active">—</div>
+  <div class="email-subject" id="email-subject">—</div>
   <div class="email-from" id="email-from"></div>
   <div class="email-badges" id="email-badges"></div>
 </div>
 
+<!-- LINKED TASK BANNER -->
+<div class="linked-task-banner" id="linked-task-banner">
+  <div class="linked-banner-inner">
+    <div class="linked-banner-icon">✅</div>
+    <div class="linked-banner-text">
+      <div class="linked-banner-label" data-i18n="linked_label">—</div>
+      <div class="linked-banner-name" id="linked-task-name">—</div>
+    </div>
+    <div class="linked-banner-actions">
+      <button class="btn-icon edit" onclick="editLinkedTask()" data-i18n="btn_edit">—</button>
+    </div>
+  </div>
+</div>
+
 <!-- QUICK CREATE -->
 <div class="quick-create" id="quick-create-section">
-  <div class="quick-create-title">Crear tarea desde este email</div>
+  <div class="quick-create-title" data-i18n="create_title">—</div>
+
   <div class="quick-row">
-    <select class="q-select" id="q-priority">
-      <option value="1">🔴 Prioridad 1</option>
-      <option value="2">🟠 Prioridad 2</option>
-      <option value="3" selected>🟡 Prioridad 3</option>
-      <option value="4">🔵 Prioridad 4</option>
-      <option value="5">⚪ Prioridad 5</option>
-    </select>
-    <select class="q-select" id="q-project">
-      <option value="">Sin proyecto</option>
-    </select>
+    <div class="field-group" style="margin:0">
+      <div class="field-label" data-i18n="lbl_priority">—</div>
+      <select class="q-select" id="q-priority"></select>
+    </div>
+    <div class="field-group" style="margin:0">
+      <div class="field-label" data-i18n="lbl_project">—</div>
+      <select class="q-select" id="q-project"></select>
+    </div>
   </div>
-  <div class="resp-row">
-    <div class="resp-chip active-followup" id="resp-followup" onclick="selectResp('followup')">👁️ Seguimiento</div>
-    <div class="resp-chip" id="resp-responsible" onclick="selectResp('responsible')">🙋 Responsable</div>
+
+  <div class="field-group">
+    <div class="field-label">
+      👁️ <span data-i18n="lbl_followup">—</span>
+      <span class="field-label-hint" data-i18n="hint_followup">—</span>
+    </div>
+    <div class="followup-chips" id="followup-chips"></div>
   </div>
+
+  <div class="field-group">
+    <div class="field-label">
+      🙋 <span data-i18n="lbl_responsible">—</span>
+      <span class="field-label-hint" data-i18n="hint_responsible">—</span>
+    </div>
+    <div class="resp-chips">
+      <div class="resp-chip active-me" id="resp-me" onclick="selectResp('me')" data-i18n="resp_me">—</div>
+      <div class="resp-chip" id="resp-other" onclick="selectResp('other')" data-i18n="resp_other">—</div>
+    </div>
+    <div id="resp-person-wrap" style="display:none">
+      <div class="person-input-wrap">
+        <input class="q-input" id="q-person-name" type="text"
+          oninput="onPersonInput(this.value)" onblur="hidePersonDropdown()" autocomplete="off">
+        <div class="person-dropdown" id="person-dropdown"></div>
+      </div>
+    </div>
+  </div>
+
   <button class="btn-create" id="btn-create" onclick="createTaskFromEmail()">
-    ＋ Crear tarea
+    ＋ <span data-i18n="btn_create_task">—</span>
   </button>
-  <div class="success-flash" id="success-flash">✅ Tarea creada correctamente</div>
+  <div class="success-flash" id="success-flash"></div>
 </div>
 
 <!-- TASK LIST -->
 <div class="tasks-area" id="tasks-area">
   <div class="tasks-header">
-    <span class="tasks-title" id="tasks-title">Tareas relacionadas</span>
+    <span class="tasks-title" id="tasks-title">—</span>
     <span class="tasks-count" id="tasks-count">0</span>
   </div>
   <div id="task-list-inner">
-    <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Cargando Office...</div>
+    <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> <span data-i18n="loading">—</span></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="onModalOverlayClick(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">✏️ <span data-i18n="modal_title">—</span></div>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+
+    <!-- Email origen de la tasca -->
+    <div class="modal-email-origin" id="edit-email-origin">
+      <div class="modal-email-origin-icon">📧</div>
+      <div class="modal-email-origin-text">
+        <div class="modal-email-origin-label" data-i18n="modal_origin_label">—</div>
+        <div class="modal-email-origin-subject" id="edit-email-origin-subject">—</div>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label" data-i18n="lbl_task_name">—</div>
+      <input class="modal-input" id="edit-name" type="text">
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">
+        <span data-i18n="lbl_desc">—</span>
+        <span class="modal-label-desc" data-i18n="hint_desc">—</span>
+      </div>
+      <textarea class="modal-textarea" id="edit-desc"></textarea>
+    </div>
+
+    <div class="modal-row modal-field">
+      <div>
+        <div class="modal-label" data-i18n="lbl_priority">—</div>
+        <select class="modal-select" id="edit-priority"></select>
+      </div>
+      <div>
+        <div class="modal-label" data-i18n="lbl_status">—</div>
+        <select class="modal-select" id="edit-status"></select>
+      </div>
+    </div>
+
+    <div class="modal-row modal-field">
+      <div>
+        <div class="modal-label" data-i18n="lbl_project">—</div>
+        <select class="modal-select" id="edit-project"></select>
+      </div>
+      <div>
+        <div class="modal-label" data-i18n="lbl_category">—</div>
+        <select class="modal-select" id="edit-category">
+          <option value="Email">📧 Email</option>
+          <option value="Meeting">📅 Meeting</option>
+          <option value="Task">✅ Task</option>
+          <option value="Call">📞 Call</option>
+          <option value="Other">📌 Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">📅 <span data-i18n="lbl_due">—</span></div>
+      <input class="modal-input" id="edit-due" type="date">
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">
+        👁️ <span data-i18n="lbl_followup">—</span>
+        <span class="modal-label-desc" data-i18n="hint_followup">—</span>
+      </div>
+      <div class="followup-chips" id="edit-followup-chips"></div>
+    </div>
+
+    <div class="modal-field">
+      <div class="modal-label">
+        🙋 <span data-i18n="lbl_responsible">—</span>
+        <span class="modal-label-desc" data-i18n="hint_responsible">—</span>
+      </div>
+      <div class="resp-chips">
+        <div class="resp-chip" id="edit-resp-me" onclick="selectEditResp('me')" data-i18n="resp_me">—</div>
+        <div class="resp-chip" id="edit-resp-other" onclick="selectEditResp('other')" data-i18n="resp_other">—</div>
+      </div>
+      <div id="edit-resp-person-wrap" style="display:none">
+        <div class="person-input-wrap">
+          <input class="modal-input" id="edit-person-name" type="text"
+            oninput="onEditPersonInput(this.value)" onblur="hideEditPersonDropdown()" autocomplete="off">
+          <div class="person-dropdown" id="edit-person-dropdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-delete" onclick="deleteCurrentTask()" data-i18n="btn_delete">—</button>
+      <button class="btn-save" onclick="saveEditedTask()" data-i18n="btn_save">—</button>
+    </div>
   </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// TASKFLOW OUTLOOK ADD-IN — PANEL
+// TASKFLOW — I18N SYSTEM
 // ══════════════════════════════════════════════════════════════
 
-const STORAGE_KEY   = 'taskflow_tasks';
-const PROJECTS_KEY  = 'taskflow_projects';
+const I18N = {
+  ca: {
+    // Tabs
+    tab_email: 'Aquest email',
+    tab_all:   'Totes',
+    tab_pinned:'Pinned',
+    // Email card
+    email_active: 'Email actiu',
+    email_from_label: 'De',
+    // Linked banner
+    linked_label: 'Tasca assignada a aquest email',
+    btn_edit: '✏️ Editar',
+    // Create form
+    create_title:    'Crear tasca des d\'aquest email',
+    lbl_priority:    'Prioritat',
+    lbl_project:     'Projecte',
+    lbl_followup:    'Seguiment',
+    hint_followup:   'en quants dies cal fer-lo?',
+    lbl_responsible: 'Responsable',
+    hint_responsible:'qui ha d\'actuar?',
+    resp_me:         '👤 Jo mateix',
+    resp_other:      '👥 Altra persona',
+    person_placeholder: 'Nom del responsable...',
+    btn_create_task: 'Crear tasca',
+    // Task list
+    tasks_related: 'Tasques relacionades',
+    tasks_all:     'Totes les tasques',
+    tasks_pinned:  'Tasques Pinned',
+    loading:       'Carregant Office...',
+    empty_email:   '📭 No hi ha tasques per a aquest email.<br>Usa el formulari de dalt per crear-ne una.',
+    empty_generic: '📭 No hi ha tasques encara.',
+    // Modal edit
+    modal_title:   'Editar tasca',
+    lbl_task_name: 'Nom de la tasca',
+    task_placeholder: 'Nom de la tasca...',
+    lbl_desc:      'Descripció',
+    hint_desc:     'notes o context addicional',
+    desc_placeholder: 'Afegeix notes...',
+    lbl_status:    'Estat',
+    btn_save:      '💾 Desar canvis',
+    btn_delete:    '🗑️ Eliminar',
+    confirm_delete:'Segur que vols eliminar aquesta tasca?',
+    // Priorities
+    priority_labels: ['🔴 Urgent','🟠 Alta','🟡 Normal','🔵 Baixa','⚪ Mínima'],
+    no_project:      'Sense projecte',
+    // Status
+    status_pending:  '⏳ Pendent',
+    status_progress: '🔄 En curs',
+    status_done:     '✅ Fet',
+    // Followup chips
+    followup_chips: ['3 dies','1 setmana','2 setmanes','1 mes','Sense'],
+    // Chips (task list)
+    chip_me:       'Jo',
+    chip_delegated:'Delegat',
+    chip_email:    'Aquest email',
+    followup_tooltip: 'Seguiment en',
+    followup_days: 'd',
+    // Badges
+    badge_flagged: '🚩 Marcat',
+    badge_attach:  '📎 Adjunts',
+    badge_linked:  '🔗 Tasca assignada',
+    // Flash messages
+    flash_created:  '✅ Tasca creada correctament',
+    flash_exists:   'ℹ️ Ja existeix una tasca per a aquest email',
+    // Themes
+    theme_to_light: 'Canviar a mode clar',
+    theme_to_dark:  'Canviar a mode fosc',
+    // Email desc auto-fill
+    email_from_prefix: 'Email de',
+    no_subject: '(Sense assumpte)',
+    modal_origin_label: 'Email origen',
+    lbl_due:     'Data límit',
+    lbl_category:'Categoria',
+    cat_email:   '📧 Email',
+    cat_meeting: '📅 Reunió',
+    cat_task:    '✅ Tasca',
+    cat_call:    '📞 Trucada',
+    cat_other:   '📌 Altre',
+  },
 
-let tasks      = [];
-let projects   = [];
-let currentEmailId  = null;
-let currentConvId   = null;
-let currentResp     = 'followup';
-let currentTab      = 'email';
-let officeItem      = null;
+  es: {
+    tab_email: 'Este email',
+    tab_all:   'Todas',
+    tab_pinned:'Pinned',
+    email_active: 'Email activo',
+    email_from_label: 'De',
+    linked_label: 'Tarea asignada a este email',
+    btn_edit: '✏️ Editar',
+    create_title:    'Crear tarea desde este email',
+    lbl_priority:    'Prioridad',
+    lbl_project:     'Proyecto',
+    lbl_followup:    'Seguimiento',
+    hint_followup:   '¿en cuántos días hay que hacerlo?',
+    lbl_responsible: 'Responsable',
+    hint_responsible:'¿quién debe actuar?',
+    resp_me:         '👤 Yo mismo',
+    resp_other:      '👥 Otra persona',
+    person_placeholder: 'Nombre del responsable...',
+    btn_create_task: 'Crear tarea',
+    tasks_related: 'Tareas relacionadas',
+    tasks_all:     'Todas las tareas',
+    tasks_pinned:  'Tareas Pinned',
+    loading:       'Cargando Office...',
+    empty_email:   '📭 No hay tareas para este email.<br>Usa el formulario de arriba para crear una.',
+    empty_generic: '📭 No hay tareas todavía.',
+    modal_title:   'Editar tarea',
+    lbl_task_name: 'Nombre de la tarea',
+    task_placeholder: 'Nombre de la tarea...',
+    lbl_desc:      'Descripción',
+    hint_desc:     'notas o contexto adicional',
+    desc_placeholder: 'Añade notas...',
+    lbl_status:    'Estado',
+    btn_save:      '💾 Guardar cambios',
+    btn_delete:    '🗑️ Eliminar',
+    confirm_delete:'¿Seguro que quieres eliminar esta tarea?',
+    priority_labels: ['🔴 Urgente','🟠 Alta','🟡 Normal','🔵 Baja','⚪ Mínima'],
+    no_project:      'Sin proyecto',
+    status_pending:  '⏳ Pendiente',
+    status_progress: '🔄 En curso',
+    status_done:     '✅ Hecho',
+    followup_chips: ['3 días','1 semana','2 semanas','1 mes','Sin seguim.'],
+    chip_me:       'Yo',
+    chip_delegated:'Delegado',
+    chip_email:    'Este email',
+    followup_tooltip: 'Seguimiento en',
+    followup_days: 'd',
+    badge_flagged: '🚩 Marcado',
+    badge_attach:  '📎 Adjuntos',
+    badge_linked:  '🔗 Tarea asignada',
+    flash_created:  '✅ Tarea creada correctamente',
+    flash_exists:   'ℹ️ Ya existe una tarea para este email',
+    theme_to_light: 'Cambiar a modo claro',
+    theme_to_dark:  'Cambiar a modo oscuro',
+    email_from_prefix: 'Email de',
+    no_subject: '(Sin asunto)',
+    modal_origin_label: 'Email origen',
+    lbl_due:     'Fecha límite',
+    lbl_category:'Categoría',
+    cat_email:   '📧 Email',
+    cat_meeting: '📅 Reunión',
+    cat_task:    '✅ Tarea',
+    cat_call:    '📞 Llamada',
+    cat_other:   '📌 Otro',
+  },
 
-// ── INIT ─────────────────────────────────────────────────────
-Office.onReady(info => {
+  en: {
+    tab_email: 'This email',
+    tab_all:   'All',
+    tab_pinned:'Pinned',
+    email_active: 'Active email',
+    email_from_label: 'From',
+    linked_label: 'Task linked to this email',
+    btn_edit: '✏️ Edit',
+    create_title:    'Create task from this email',
+    lbl_priority:    'Priority',
+    lbl_project:     'Project',
+    lbl_followup:    'Follow-up',
+    hint_followup:   'in how many days?',
+    lbl_responsible: 'Owner',
+    hint_responsible:'who should act?',
+    resp_me:         '👤 Myself',
+    resp_other:      '👥 Someone else',
+    person_placeholder: 'Owner\'s name...',
+    btn_create_task: 'Create task',
+    tasks_related: 'Related tasks',
+    tasks_all:     'All tasks',
+    tasks_pinned:  'Pinned tasks',
+    loading:       'Loading Office...',
+    empty_email:   '📭 No tasks for this email.<br>Use the form above to create one.',
+    empty_generic: '📭 No tasks yet.',
+    modal_title:   'Edit task',
+    lbl_task_name: 'Task name',
+    task_placeholder: 'Task name...',
+    lbl_desc:      'Description',
+    hint_desc:     'additional notes or context',
+    desc_placeholder: 'Add notes...',
+    lbl_status:    'Status',
+    btn_save:      '💾 Save changes',
+    btn_delete:    '🗑️ Delete',
+    confirm_delete:'Are you sure you want to delete this task?',
+    priority_labels: ['🔴 Urgent','🟠 High','🟡 Normal','🔵 Low','⚪ Minimal'],
+    no_project:      'No project',
+    status_pending:  '⏳ Pending',
+    status_progress: '🔄 In progress',
+    status_done:     '✅ Done',
+    followup_chips: ['3 days','1 week','2 weeks','1 month','None'],
+    chip_me:       'Me',
+    chip_delegated:'Delegated',
+    chip_email:    'This email',
+    followup_tooltip: 'Follow-up in',
+    followup_days: 'd',
+    badge_flagged: '🚩 Flagged',
+    badge_attach:  '📎 Attachments',
+    badge_linked:  '🔗 Task linked',
+    flash_created:  '✅ Task created successfully',
+    flash_exists:   'ℹ️ A task already exists for this email',
+    theme_to_light: 'Switch to light mode',
+    theme_to_dark:  'Switch to dark mode',
+    email_from_prefix: 'Email from',
+    no_subject: '(No subject)',
+    modal_origin_label: 'Source email',
+    lbl_due:     'Due date',
+    lbl_category:'Category',
+    cat_email:   '📧 Email',
+    cat_meeting: '📅 Meeting',
+    cat_task:    '✅ Task',
+    cat_call:    '📞 Call',
+    cat_other:   '📌 Other',
+  }
+};
+
+const LANG_META = {
+  ca: { flag: '🏳️', code: 'CA', htmlLang: 'ca' },
+  es: { flag: '🇪🇸', code: 'ES', htmlLang: 'es' },
+  en: { flag: '🇬🇧', code: 'EN', htmlLang: 'en' },
+};
+
+const LANG_KEY  = 'taskflow_lang';
+const FOLLOWUP_DAYS_VALUES = [3, 7, 14, 30, 0];
+
+let currentLang = 'ca';
+
+// ── t() — translate key ────────────────────────────────────────
+function t(key) {
+  return (I18N[currentLang] || I18N.ca)[key] || key;
+}
+
+// ── APPLY LANGUAGE ─────────────────────────────────────────────
+function applyLang(lang) {
+  currentLang = lang;
+  localStorage.setItem(LANG_KEY, lang);
+
+  const meta = LANG_META[lang] || LANG_META.ca;
+  document.documentElement.lang = meta.htmlLang;
+  document.getElementById('lang-flag').textContent = meta.flag;
+  document.getElementById('lang-code').textContent = meta.code;
+
+  // Mark active option
+  document.querySelectorAll('.lang-option').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick') === `setLang('${lang}')`);
+  });
+
+  // Re-render all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+
+  // Theme toggle title
+  const isDark = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark';
+  const themeBtn = document.getElementById('theme-toggle');
+  if (themeBtn) themeBtn.title = isDark ? t('theme_to_light') : t('theme_to_dark');
+
+  // Rebuild dynamic elements that depend on language
+  buildFollowupChips('followup-chips',     currentFollowupDays, selectFollowupDays);
+  buildFollowupChips('edit-followup-chips', editFollowupDays,   selectEditFollowupDays);
+  buildPriorityOptions('q-priority',    parseInt(document.getElementById('q-priority')?.value) || 3);
+  buildPriorityOptions('edit-priority', parseInt(document.getElementById('edit-priority')?.value) || 3);
+  buildStatusOptions('edit-status', document.getElementById('edit-status')?.value || 'pending');
+  populateProjectSelects();
+
+  // Placeholders
+  const qPerson = document.getElementById('q-person-name');
+  if (qPerson) qPerson.placeholder = t('person_placeholder');
+  const ePerson = document.getElementById('edit-person-name');
+  if (ePerson) ePerson.placeholder = t('person_placeholder');
+  const eName = document.getElementById('edit-name');
+  if (eName) eName.placeholder = t('task_placeholder');
+  const eDesc = document.getElementById('edit-desc');
+  if (eDesc) eDesc.placeholder = t('desc_placeholder');
+
+  // Tasks title for current tab
+  const titlesMap = { email: t('tasks_related'), all: t('tasks_all'), pinned: t('tasks_pinned') };
+  const titleEl = document.getElementById('tasks-title');
+  if (titleEl) titleEl.textContent = titlesMap[currentTab] || t('tasks_related');
+
+  // Re-render task list to update chips/labels
+  renderTasks();
+}
+
+function setLang(lang) {
+  applyLang(lang);
+  closeLangDropdown();
+}
+
+// ── LANG DROPDOWN ─────────────────────────────────────────────
+function toggleLangDropdown() {
+  const dd = document.getElementById('lang-dropdown');
+  dd.classList.toggle('open');
+}
+function closeLangDropdown() {
+  document.getElementById('lang-dropdown').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('lang-selector').contains(e.target)) {
+    closeLangDropdown();
+  }
+});
+
+// ── BUILD DYNAMIC SELECT OPTIONS ──────────────────────────────
+function buildPriorityOptions(selectId, selectedVal) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const labels = t('priority_labels');
+  sel.innerHTML = labels.map((lbl, i) =>
+    `<option value="${i+1}"${selectedVal === i+1 ? ' selected' : ''}>${lbl}</option>`
+  ).join('');
+}
+
+function buildStatusOptions(selectId, selectedVal) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const opts = [
+    { v:'pending',     lbl: t('status_pending')  },
+    { v:'in-progress', lbl: t('status_progress') },
+    { v:'done',        lbl: t('status_done')      },
+  ];
+  sel.innerHTML = opts.map(o =>
+    `<option value="${o.v}"${selectedVal === o.v ? ' selected' : ''}>${o.lbl}</option>`
+  ).join('');
+}
+
+function buildFollowupChips(containerId, activeDays, clickFn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const chips = t('followup_chips');
+  container.innerHTML = FOLLOWUP_DAYS_VALUES.map((days, i) =>
+    `<div class="followup-chip${activeDays === days ? ' active' : ''}"
+      data-days="${days}" onclick="${clickFn.name}(${days})">${chips[i]}</div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — CORE APP
+// ══════════════════════════════════════════════════════════════
+
+const ROAMING_KEY = 'taskflow_tasks';
+const THEME_KEY   = 'taskflow_theme';
+const PERSONS_KEY = 'taskflow_persons';
+
+let tasks            = [];
+let projects         = [];
+let currentEmailId   = null;
+let currentConvId    = null;
+let currentResp      = 'me';
+let currentFollowupDays = 3;
+let currentTab       = 'email';
+let officeItem       = null;
+let editingTaskId    = null;
+let editResp         = 'me';
+let editFollowupDays = 7;
+
+// ── PERSONS MEMORY ────────────────────────────────────────────
+function getPersons() {
+  try { return JSON.parse(localStorage.getItem(PERSONS_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function savePerson(name) {
+  if (!name?.trim()) return;
+  const list = getPersons();
+  const trimmed = name.trim();
+  if (!list.includes(trimmed)) {
+    list.unshift(trimmed);
+    if (list.length > 30) list.pop();
+    localStorage.setItem(PERSONS_KEY, JSON.stringify(list));
+  }
+}
+
+// ── THEME ────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  const isDark = theme === 'dark';
+  if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+  if (btn) btn.title = isDark ? t('theme_to_light') : t('theme_to_dark');
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  localStorage.setItem(THEME_KEY, next);
+}
+
+// Apply saved theme + lang immediately (before Office.onReady) to prevent flash
+(function() {
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+  }
+  const savedLang = localStorage.getItem(LANG_KEY) || 'ca';
+  currentLang = savedLang;
+  const meta = LANG_META[savedLang] || LANG_META.ca;
+  document.documentElement.lang = meta.htmlLang;
+  document.getElementById('lang-flag').textContent = meta.flag;
+  document.getElementById('lang-code').textContent = meta.code;
+})();
+
+// ── INIT ──────────────────────────────────────────────────────
+Office.onReady(async (info) => {
   if (info.host !== Office.HostType.Outlook) return;
-  loadData();
-  populateProjectSelect();
+  await TaskFlowDB.init();
+
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+  applyTheme(savedTheme);
+
+  const savedLang = localStorage.getItem(LANG_KEY) || 'ca';
+  // Full render: build all dynamic elements and translate everything
+  applyLang(savedLang);
+
+  await loadData();
+  await syncFromRoaming();
+  populateProjectSelects();
   bindEmailContext();
-  // Re-bind when user switches emails
+
   Office.context.mailbox.addHandlerAsync(
     Office.EventType.ItemChanged,
     () => bindEmailContext()
   );
 });
 
-function loadData() {
-  tasks    = JSON.parse(localStorage.getItem(STORAGE_KEY)   || '[]');
-  projects = JSON.parse(localStorage.getItem(PROJECTS_KEY)  || '[]');
+async function loadData() {
+  tasks    = await TaskFlowDB.getAllTasks();
+  projects = await TaskFlowDB.getAllProjects();
+}
+async function saveTask(task) {
+  await TaskFlowDB.putTask(task);
+  tasks = await TaskFlowDB.getAllTasks();
+  syncToRoaming();
 }
 
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+// ── ROAMING ───────────────────────────────────────────────────
+function syncToRoaming() {
+  try {
+    const roaming = Office.context.roamingSettings;
+    const slim = tasks.slice(0, 50).map(t => ({
+      id:t.id, name:t.name, emailId:t.emailId, status:t.status,
+      priority:t.priority, resp:t.resp, project:t.project, created:t.created
+    }));
+    roaming.set(ROAMING_KEY, JSON.stringify(slim));
+    roaming.saveAsync();
+  } catch(e) {}
+}
+async function syncFromRoaming() {
+  try {
+    const roaming = Office.context.roamingSettings;
+    const raw = roaming.get(ROAMING_KEY);
+    if (!raw) return;
+    const remote = JSON.parse(raw);
+    const localIds = new Set(tasks.map(t => t.id));
+    const toAdd = remote.filter(rt => !localIds.has(rt.id));
+    if (toAdd.length > 0) {
+      await TaskFlowDB.putTasks(toAdd);
+      tasks = await TaskFlowDB.getAllTasks();
+    }
+  } catch(e) {}
 }
 
 // ── EMAIL CONTEXT ─────────────────────────────────────────────
-function bindEmailContext() {
+
+// Normalitza un itemId d'Outlook eliminant el prefix EWS i posant-lo en minúscules.
+// Outlook pot retornar el mateix missatge amb formats lleugerament diferents
+// segons si l'add-in s'executa en mode REST o EWS, o entre sessions.
+function normalizeId(id) {
+  if (!id) return '';
+  // Elimina possibles prefixos "AAMkAD..." o codificació URL, i normalitza
+  return String(id).trim().toLowerCase();
+}
+
+async function bindEmailContext() {
   officeItem = Office.context.mailbox.item;
   if (!officeItem) return;
 
-  currentEmailId = officeItem.itemId;
-  currentConvId  = officeItem.conversationId;
+  // Assegurem que les dades estan carregades abans de comparar
+  await loadData();
 
-  // Subject
+  // Normalitzem els IDs per evitar discrepàncies de format EWS/REST
+  currentEmailId = normalizeId(officeItem.itemId);
+  currentConvId  = normalizeId(officeItem.conversationId);
+
   document.getElementById('email-subject').textContent =
-    officeItem.subject || '(Sin asunto)';
+    officeItem.subject || t('no_subject');
 
-  // From
   const from = officeItem.from;
   document.getElementById('email-from').innerHTML =
-    from ? `<span style="color:var(--text3)">De:</span> ${escHtml(from.displayName||'')} &lt;${escHtml(from.emailAddress||'')}&gt;` : '';
+    from ? `<span style="color:var(--text3)">${t('email_from_label')}:</span> ${escHtml(from.displayName||'')} &lt;${escHtml(from.emailAddress||'')}&gt;` : '';
 
-  // Badges: Pinned (category) + flag + attachments
+  // Gestió de categories i badges (callback-based)
   officeItem.categories.getAsync(result => {
     const cats = result.status === Office.AsyncResultStatus.Succeeded ? result.value : [];
-    const isPinned = cats.some(c => (c.displayName||'').toLowerCase().includes('pinned') || (c.displayName||'').toLowerCase().includes('anclado'));
-    
-    officeItem.getAttachmentsAsync(r2 => {
-      const hasAttach = r2.status === Office.AsyncResultStatus.Succeeded && r2.value.length > 0;
+    const isPinned = cats.some(c =>
+      (c.displayName||'').toLowerCase().includes('pinned') ||
+      (c.displayName||'').toLowerCase().includes('anclado')
+    );
+
+    const renderBadges = async (hasAttach) => {
       const flagStatus = officeItem.flag ? officeItem.flag.status : 'notFlagged';
       const isFlagged  = flagStatus === 'flagged';
 
       const badges = document.getElementById('email-badges');
       badges.innerHTML = '';
-      if (isPinned)    badges.innerHTML += `<span class="badge badge-pinned">📌 Pinned</span>`;
-      if (isFlagged)   badges.innerHTML += `<span class="badge badge-flagged">🚩 Banderita</span>`;
-      if (hasAttach)   badges.innerHTML += `<span class="badge badge-attach">📎 Adjuntos</span>`;
+      if (isPinned)  badges.innerHTML += `<span class="badge badge-pinned">📌 Pinned</span>`;
+      if (isFlagged) badges.innerHTML += `<span class="badge badge-flagged">${t('badge_flagged')}</span>`;
+      if (hasAttach) badges.innerHTML += `<span class="badge badge-attach">${t('badge_attach')}</span>`;
 
-      // Auto-set responsibility based on email state
-      if (isPinned && isFlagged) selectResp('responsible');
-      else if (isPinned)         selectResp('followup');
+      if (isPinned && isFlagged) selectResp('other');
+      else if (isPinned)         selectResp('me');
 
-      // Render tasks
+      await updateEmailTaskState();
       renderTasks();
-    });
+    };
+
+    if (typeof officeItem.getAttachmentsAsync === 'function') {
+      officeItem.getAttachmentsAsync(r2 => {
+        const hasAttach = r2.status === Office.AsyncResultStatus.Succeeded && r2.value.length > 0;
+        renderBadges(hasAttach);
+      });
+    } else {
+      renderBadges(false);
+    }
   });
 }
 
-// ── TABS ─────────────────────────────────────────────────────
+// ── EMAIL ↔ TASK STATE ────────────────────────────────────────
+async function updateEmailTaskState() {
+  await loadData();
+  const linked = findLinkedTask();
+  const banner = document.getElementById('linked-task-banner');
+  const qc     = document.getElementById('quick-create-section');
+  const badges = document.getElementById('email-badges');
+
+  if (linked) {
+    banner.style.display = 'block';
+    qc.style.display = 'none';
+    document.getElementById('linked-task-name').textContent = linked.name || '—';
+    if (!badges.querySelector('.badge-linked')) {
+      badges.innerHTML += `<span class="badge badge-linked">${t('badge_linked')}</span>`;
+    }
+  } else {
+    banner.style.display = 'none';
+    if (currentTab === 'email') qc.style.display = 'block';
+    const lb = badges.querySelector('.badge-linked');
+    if (lb) lb.remove();
+  }
+}
+
+function findLinkedTask() {
+  if (!currentEmailId && !currentConvId) return null;
+  return tasks.find(task => {
+    const taskEmailId = normalizeId(task.emailId);
+    const taskConvId  = normalizeId(task.conversationId);
+    const matchEmail  = currentEmailId && taskEmailId && taskEmailId === currentEmailId;
+    const matchConv   = currentConvId  && taskConvId  && taskConvId  === currentConvId;
+    return matchEmail || matchConv;
+  }) || null;
+}
+function editLinkedTask() {
+  const linked = findLinkedTask();
+  if (linked) openEditModal(linked.id);
+}
+
+// ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.topbar-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 
   const qc = document.getElementById('quick-create-section');
-  qc.style.display = tab === 'email' ? 'block' : 'none';
+  if (tab === 'email') {
+    qc.style.display = findLinkedTask() ? 'none' : 'block';
+  } else {
+    qc.style.display = 'none';
+  }
 
-  const titles = { email:'Tareas relacionadas', all:'Todas las tareas', pinned:'Tareas Pinned' };
-  document.getElementById('tasks-title').textContent = titles[tab];
-
+  const titlesMap = { email: t('tasks_related'), all: t('tasks_all'), pinned: t('tasks_pinned') };
+  document.getElementById('tasks-title').textContent = titlesMap[tab] || t('tasks_related');
   renderTasks();
 }
 
 // ── RENDER TASKS ──────────────────────────────────────────────
-function renderTasks() {
-  loadData();
+async function renderTasks() {
+  await loadData();
   let list = [...tasks];
 
   if (currentTab === 'email') {
-    // Show tasks linked to this email OR this conversation
-    list = list.filter(t =>
-      t.emailId === currentEmailId ||
-      (t.conversationId && t.conversationId === currentConvId)
-    );
+    list = list.filter(task => {
+      const taskEmailId = normalizeId(task.emailId);
+      const taskConvId  = normalizeId(task.conversationId);
+      const matchEmail  = currentEmailId && taskEmailId && taskEmailId === currentEmailId;
+      const matchConv   = currentConvId  && taskConvId  && taskConvId  === currentConvId;
+      return matchEmail || matchConv;
+    });
   } else if (currentTab === 'pinned') {
-    list = list.filter(t => t.resp === 'followup' || t.resp === 'responsible');
+    list = list.filter(t => ['followup','responsible','me','other'].includes(t.resp));
   }
-  // 'all' shows everything, sorted by date desc
   list.sort((a,b) => (b.created||0) - (a.created||0));
 
   document.getElementById('tasks-count').textContent = list.length;
@@ -269,112 +1012,184 @@ function renderTasks() {
 
   if (!list.length) {
     container.innerHTML = `<div class="empty-msg">
-      ${currentTab === 'email'
-        ? '📭 No hay tareas para este email.<br>Usa el formulario de arriba para crear una.'
-        : '📭 No hay tareas todavía.'}
+      ${currentTab === 'email' ? t('empty_email') : t('empty_generic')}
     </div>`;
     return;
   }
 
   container.innerHTML = '';
-  list.forEach(t => container.appendChild(buildTaskItem(t)));
+  list.forEach(task => {
+    const el = buildTaskItem(task);
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('ti-check') || e.target.closest('.ti-check')) return;
+      openEditModal(task.id);
+    });
+    container.appendChild(el);
+  });
 }
 
-function buildTaskItem(t) {
+function buildTaskItem(task) {
   const div = document.createElement('div');
-  const isCurrent = t.emailId === currentEmailId;
-  div.className = `task-item${t.status==='done'?' done':''}${isCurrent?' is-current-email':''}`;
+  const isCurrent = normalizeId(task.emailId) === currentEmailId;
+  div.className = `task-item${task.status==='done'?' done':''}${isCurrent?' is-current-email':''}`;
 
-  const proj   = projects.find(p => p.id === t.project);
+  const proj   = projects.find(p => p.id === task.project);
   const stMap  = { pending:'pending', 'in-progress':'progress', done:'done-chip' };
-  const stLabel= { pending:'⏳ Pendiente','in-progress':'🔄 En progreso', done:'✅ Hecho' };
-  const rMap   = { followup:'followup', responsible:'responsible' };
+  const stLabel= {
+    pending:     t('status_pending'),
+    'in-progress': t('status_progress'),
+    done:        t('status_done'),
+  };
+
+  const isMe    = task.resp === 'me' || task.resp === 'followup';
+  const isOther = task.resp === 'other' || task.resp === 'responsible';
+  let respChip = '';
+  if (isMe) {
+    respChip = `<span class="ti-chip followup">👤 ${t('chip_me')}</span>`;
+  } else if (isOther) {
+    const who = task.assigneeName ? escHtml(task.assigneeName) : t('chip_delegated');
+    respChip = `<span class="ti-chip responsible">👥 ${who}</span>`;
+  }
+
+  let fChip = '';
+  if (task.followupDays > 0) {
+    fChip = `<span class="ti-chip followup" title="${t('followup_tooltip')} ${task.followupDays} ${t('followup_days')}">👁️ ${task.followupDays}${t('followup_days')}</span>`;
+  }
+
+  // Due date chip
+  let dueChip = '';
+  if (task.due) {
+    const dueDate = new Date(task.due + 'T00:00:00');
+    const now = new Date(); now.setHours(0,0,0,0);
+    const isOverdue = dueDate < now && task.status !== 'done';
+    const localeMap = {en:'en-GB', es:'es-ES', ca:'ca-ES'};
+    const dueStr = dueDate.toLocaleDateString(localeMap[currentLang] || 'es-ES', {day:'2-digit',month:'2-digit'});
+    const dueColor = isOverdue
+      ? 'color:var(--red);border-color:var(--red);background:var(--red-dim)'
+      : 'color:var(--text3);border-color:var(--border2);background:var(--surface3)';
+    dueChip = '<span class="ti-chip" style="' + dueColor + '">' + (isOverdue ? '⚠️' : '📅') + ' ' + dueStr + '</span>';
+  }
 
   div.innerHTML = `
+    <span class="ti-edit-hint">✏️</span>
     <div class="ti-top">
-      <div class="ti-check ${t.status==='done'?'checked':''}" onclick="toggleTask('${t.id}',event)">
-        ${t.status==='done'?'✓':''}
+      <div class="ti-check ${task.status==='done'?'checked':''}" onclick="toggleTask('${task.id}',event)">
+        ${task.status==='done'?'✓':''}
       </div>
-      <div class="ti-name">${escHtml(t.name)}</div>
+      <div class="ti-name">${escHtml(task.name)}</div>
     </div>
     <div class="ti-icons">
-      <div class="ti-priority p${t.priority||3}">${t.priority||3}</div>
+      <div class="ti-priority p${task.priority||3}">${task.priority||3}</div>
       ${proj?`<span class="ti-chip" style="color:${proj.color};border-color:${proj.color}40;background:${proj.color}18">${escHtml(proj.name)}</span>`:''}
-      <span class="ti-chip ${stMap[t.status]||'pending'}">${stLabel[t.status]||'⏳ Pendiente'}</span>
-      ${t.resp&&t.resp!=='none'?`<span class="ti-chip ${rMap[t.resp]||''}">${t.resp==='followup'?'👁️':'🙋'}</span>`:''}
-      ${isCurrent?`<span class="ti-chip email">📧 Este email</span>`:''}
+      <span class="ti-chip ${stMap[task.status]||'pending'}">${stLabel[task.status]||t('status_pending')}</span>
+      ${respChip}${fChip}${dueChip}
+      ${isCurrent?`<span class="ti-chip email">📧 ${t('chip_email')}</span>`:''}
     </div>`;
   return div;
 }
 
-function toggleTask(id, e) {
+async function toggleTask(id, e) {
   e.stopPropagation();
-  loadData();
-  const t = tasks.find(t => t.id === id);
-  if (!t) return;
-  t.status = t.status === 'done' ? 'pending' : 'done';
-  saveData();
+  const found = await TaskFlowDB.getTask(id);
+  if (!found) return;
+  found.status = found.status === 'done' ? 'pending' : 'done';
+  await saveTask(found);
+  await updateEmailTaskState();
   renderTasks();
 }
 
-// ── QUICK CREATE ──────────────────────────────────────────────
-function selectResp(r) {
-  currentResp = r;
-  document.getElementById('resp-followup').className    = 'resp-chip' + (r==='followup'?' active-followup':'');
-  document.getElementById('resp-responsible').className = 'resp-chip' + (r==='responsible'?' active-responsible':'');
-}
-
-function populateProjectSelect() {
-  const sel = document.getElementById('q-project');
-  const projs = JSON.parse(localStorage.getItem(PROJECTS_KEY) || '[]');
-  sel.innerHTML = '<option value="">Sin proyecto</option>';
-  projs.forEach(p => {
-    const o = document.createElement('option');
-    o.value = p.id; o.textContent = p.name;
-    sel.appendChild(o);
+// ── FOLLOWUP CHIPS ────────────────────────────────────────────
+function selectFollowupDays(days) {
+  currentFollowupDays = days;
+  document.querySelectorAll('#followup-chips .followup-chip').forEach(c => {
+    c.classList.toggle('active', parseInt(c.dataset.days) === days);
   });
 }
 
-function createTaskFromEmail() {
+// ── RESPONSABLE ───────────────────────────────────────────────
+function selectResp(r) {
+  currentResp = r;
+  document.getElementById('resp-me').className    = 'resp-chip' + (r==='me'?' active-me':'');
+  document.getElementById('resp-other').className = 'resp-chip' + (r==='other'?' active-other':'');
+  document.getElementById('resp-person-wrap').style.display = r === 'other' ? 'block' : 'none';
+}
+
+function onPersonInput(val) {
+  const dd = document.getElementById('person-dropdown');
+  const persons = getPersons().filter(p => p.toLowerCase().includes(val.toLowerCase()));
+  if (!val.trim() || !persons.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = persons.map(p =>
+    `<div class="person-option" onmousedown="selectPerson('${escHtml(p)}')">${escHtml(p)}</div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selectPerson(name) {
+  document.getElementById('q-person-name').value = name;
+  document.getElementById('person-dropdown').style.display = 'none';
+}
+function hidePersonDropdown() {
+  setTimeout(() => { document.getElementById('person-dropdown').style.display = 'none'; }, 150);
+}
+
+// ── POPULATE PROJECTS ─────────────────────────────────────────
+function populateProjectSelects() {
+  ['q-project', 'edit-project'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = `<option value="">${t('no_project')}</option>`;
+    projects.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = p.name;
+      sel.appendChild(o);
+    });
+    sel.value = current;
+  });
+}
+
+// ── CREATE TASK ───────────────────────────────────────────────
+async function createTaskFromEmail() {
   if (!officeItem) return;
   const btn = document.getElementById('btn-create');
   btn.disabled = true;
 
-  loadData();
-
-  // Check duplicate
-  const already = tasks.find(t => t.emailId === currentEmailId);
+  const already = await TaskFlowDB.taskExistsForEmail(currentEmailId);
   if (already) {
-    showFlash('ℹ️ Ya existe una tarea para este email');
+    showFlash(t('flash_exists'));
     btn.disabled = false;
     return;
   }
 
+  const personName = currentResp === 'other'
+    ? (document.getElementById('q-person-name').value || '').trim()
+    : '';
+  if (currentResp === 'other' && personName) savePerson(personName);
+
   const task = {
     id: 'task_' + Date.now(),
-    name: officeItem.subject || '(Sin asunto)',
-    desc: `Email de: ${officeItem.from ? officeItem.from.displayName : ''}`,
-    emailId: currentEmailId,
+    name: officeItem.subject || t('no_subject'),
+    desc: `${t('email_from_prefix')}: ${officeItem.from ? officeItem.from.displayName : ''}`,
+    emailId: currentEmailId,  // ja normalitzat per bindEmailContext
     emailSubject: officeItem.subject,
     emailFrom: officeItem.from ? officeItem.from.emailAddress : '',
     conversationId: currentConvId,
     resp: currentResp,
+    assigneeName: personName,
     priority: parseInt(document.getElementById('q-priority').value) || 3,
     status: 'pending',
     project: document.getElementById('q-project').value,
     category: 'Email',
     due: '',
-    assignee: '',
-    followupDays: 7,
+    followupDays: currentFollowupDays,
     vendor: '',
     created: Date.now(),
     lastActivity: new Date().toISOString(),
     source: 'outlook-addin'
   };
 
-  tasks.unshift(task);
-  saveData();
-  showFlash('✅ Tarea creada correctamente');
+  await saveTask(task);
+  showFlash(t('flash_created'));
+  await updateEmailTaskState();
   renderTasks();
   btn.disabled = false;
 }
@@ -384,6 +1199,134 @@ function showFlash(msg) {
   f.textContent = msg;
   f.style.display = 'block';
   setTimeout(() => f.style.display = 'none', 3000);
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────
+async function openEditModal(taskId) {
+  const task = await TaskFlowDB.getTask(taskId);
+  if (!task) return;
+  editingTaskId = taskId;
+
+  document.getElementById('edit-name').value    = task.name || '';
+  document.getElementById('edit-name').placeholder = t('task_placeholder');
+  document.getElementById('edit-desc').value    = task.desc || '';
+  document.getElementById('edit-desc').placeholder = t('desc_placeholder');
+
+  // Rebuild dynamic selects with current language
+  buildPriorityOptions('edit-priority', task.priority || 3);
+  buildStatusOptions('edit-status', task.status || 'pending');
+  populateProjectSelects();
+  document.getElementById('edit-project').value = task.project || '';
+
+  // Seguiment
+  editFollowupDays = task.followupDays !== undefined ? task.followupDays : 7;
+  buildFollowupChips('edit-followup-chips', editFollowupDays, selectEditFollowupDays);
+
+  // Responsable — backward compat
+  let respVal = task.resp || 'me';
+  if (respVal === 'followup' || respVal === 'none') respVal = 'me';
+  if (respVal === 'responsible') respVal = 'other';
+  selectEditResp(respVal);
+  document.getElementById('edit-person-name').value = task.assigneeName || '';
+  document.getElementById('edit-person-name').placeholder = t('person_placeholder');
+
+  // Due date
+  document.getElementById('edit-due').value = task.due || '';
+
+  // Category
+  const catSel = document.getElementById('edit-category');
+  catSel.value = task.category || 'Email';
+
+  // Banner email origen
+  const originBanner = document.getElementById('edit-email-origin');
+  const originSubject = document.getElementById('edit-email-origin-subject');
+  if (task.emailSubject || task.emailFrom) {
+    originSubject.textContent = task.emailSubject || task.emailFrom || '';
+    originBanner.classList.add('visible');
+  } else {
+    originBanner.classList.remove('visible');
+  }
+
+  document.getElementById('edit-modal').classList.add('open');
+  setTimeout(() => document.getElementById('edit-name').focus(), 120);
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingTaskId = null;
+}
+function onModalOverlayClick(e) {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+}
+
+function selectEditFollowupDays(days) {
+  editFollowupDays = days;
+  document.querySelectorAll('#edit-followup-chips .followup-chip').forEach(c => {
+    c.classList.toggle('active', parseInt(c.dataset.days) === days);
+  });
+}
+
+function selectEditResp(r) {
+  editResp = r;
+  document.getElementById('edit-resp-me').className    = 'resp-chip' + (r==='me'?' active-me':'');
+  document.getElementById('edit-resp-other').className = 'resp-chip' + (r==='other'?' active-other':'');
+  document.getElementById('edit-resp-person-wrap').style.display = r === 'other' ? 'block' : 'none';
+}
+
+function onEditPersonInput(val) {
+  const dd = document.getElementById('edit-person-dropdown');
+  const persons = getPersons().filter(p => p.toLowerCase().includes(val.toLowerCase()));
+  if (!val.trim() || !persons.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = persons.map(p =>
+    `<div class="person-option" onmousedown="selectEditPerson('${escHtml(p)}')">${escHtml(p)}</div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selectEditPerson(name) {
+  document.getElementById('edit-person-name').value = name;
+  document.getElementById('edit-person-dropdown').style.display = 'none';
+}
+function hideEditPersonDropdown() {
+  setTimeout(() => { document.getElementById('edit-person-dropdown').style.display = 'none'; }, 150);
+}
+
+async function saveEditedTask() {
+  if (!editingTaskId) return;
+  const task = await TaskFlowDB.getTask(editingTaskId);
+  if (!task) return;
+
+  const personName = editResp === 'other'
+    ? (document.getElementById('edit-person-name').value || '').trim()
+    : '';
+  if (editResp === 'other' && personName) savePerson(personName);
+
+  task.name         = document.getElementById('edit-name').value.trim() || task.name;
+  task.desc         = document.getElementById('edit-desc').value;
+  task.priority     = parseInt(document.getElementById('edit-priority').value) || 3;
+  task.status       = document.getElementById('edit-status').value;
+  task.project      = document.getElementById('edit-project').value;
+  task.resp         = editResp;
+  task.assigneeName = personName;
+  task.followupDays = editFollowupDays;
+  task.due          = document.getElementById('edit-due').value || '';
+  task.category     = document.getElementById('edit-category').value || 'Email';
+  task.lastActivity = new Date().toISOString();
+
+  await saveTask(task);
+  closeEditModal();
+  await updateEmailTaskState();
+  renderTasks();
+}
+
+async function deleteCurrentTask() {
+  if (!editingTaskId) return;
+  if (!confirm(t('confirm_delete'))) return;
+  await TaskFlowDB.deleteTask(editingTaskId);
+  tasks = await TaskFlowDB.getAllTasks();
+  syncToRoaming();
+  closeEditModal();
+  await updateEmailTaskState();
+  renderTasks();
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
