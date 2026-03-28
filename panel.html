@@ -122,6 +122,13 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .btn-create:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .success-flash{background:var(--green-dim);border:1px solid rgba(0,240,144,.35);color:var(--green);border-radius:7px;padding:8px 12px;font-size:12px;font-weight:700;text-align:center;display:none;margin-top:8px}
 
+/* ── QUICK FILTERS ── */
+.quick-filters{display:none;padding:8px 14px 4px;gap:6px;flex-wrap:wrap;flex-shrink:0;border-bottom:1px solid var(--border)}
+.quick-filters.visible{display:flex}
+.qf-select{font-size:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text1);padding:3px 6px;cursor:pointer;height:26px}
+.qf-select:focus{outline:none;border-color:var(--accent)}
+.qf-reset{font-size:11px;background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--text3);padding:3px 8px;cursor:pointer;height:26px}
+.qf-reset:hover{border-color:var(--accent);color:var(--accent)}
 /* ── TASK LIST ── */
 .tasks-area{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 .tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -339,6 +346,33 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
   <div class="success-flash" id="success-flash"></div>
 </div>
 
+<!-- QUICK FILTERS (only for 'all' tab) -->
+<div class="quick-filters" id="quick-filters-bar">
+  <select class="qf-select" id="qf-priority" onchange="renderTasks()">
+    <option value="" data-i18n="qf_all_priorities">—</option>
+    <option value="1">🔴 1</option>
+    <option value="2">🟠 2</option>
+    <option value="3">🟡 3</option>
+    <option value="4">🔵 4</option>
+    <option value="5">⚪ 5</option>
+  </select>
+  <select class="qf-select" id="qf-status" onchange="renderTasks()">
+    <option value="" data-i18n="qf_all_statuses">—</option>
+    <option value="pending" data-i18n="status_pending">—</option>
+    <option value="in-progress" data-i18n="status_progress">—</option>
+    <option value="done" data-i18n="status_done">—</option>
+  </select>
+  <select class="qf-select" id="qf-resp" onchange="renderTasks()">
+    <option value="" data-i18n="qf_all_resp">—</option>
+    <option value="me" data-i18n="qf_resp_me">—</option>
+    <option value="other" data-i18n="qf_resp_other">—</option>
+  </select>
+  <select class="qf-select" id="qf-project" onchange="renderTasks()">
+    <option value="" data-i18n="qf_all_projects">—</option>
+  </select>
+  <button class="qf-reset" onclick="resetFilters()" data-i18n="qf_reset">—</button>
+</div>
+
 <!-- TASK LIST -->
 <div class="tasks-area" id="tasks-area">
   <div class="tasks-header">
@@ -503,6 +537,12 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
     </div>
 
     <div class="modal-field">
+      <div class="modal-label">🏢 <span data-i18n="lbl_vendor">—</span></div>
+      <input class="modal-input" id="edit-vendor" type="text" autocomplete="off"
+        placeholder="" data-i18n-placeholder="vendor_placeholder">
+    </div>
+
+    <div class="modal-field">
       <div class="modal-label">📅 <span data-i18n="lbl_due">—</span></div>
       <input class="modal-input" id="edit-due" type="date">
     </div>
@@ -644,11 +684,21 @@ const I18N = {
     modal_origin_label: 'Email origen',
     lbl_due:     'Data límit',
     lbl_category:'Categoria',
+    lbl_vendor:  'Proveïdor',
+    vendor_placeholder: 'Nom del proveïdor...',
     cat_email:   '📧 Email',
     cat_meeting: '📅 Reunió',
     cat_task:    '✅ Tasca',
     cat_call:    '📞 Trucada',
     cat_other:   '📌 Altre',
+    // Quick filters
+    qf_all_priorities: 'Totes les prioritats',
+    qf_all_statuses:   'Tots els estats',
+    qf_all_resp:       'Tots els responsables',
+    qf_all_projects:   'Tots els projectes',
+    qf_resp_me:        '👤 Jo mateix',
+    qf_resp_other:     '👥 Altra persona',
+    qf_reset:          '✕ Netejar filtres',
   },
 
   es: {
@@ -676,6 +726,15 @@ const I18N = {
     loading:       'Cargando Office...',
     empty_email:   '📭 No hay tareas para este email.<br>Usa el formulario de arriba para crear una.',
     empty_generic: '📭 No hay tareas todavía.',
+    lbl_vendor:  'Proveedor',
+    vendor_placeholder: 'Nombre del proveedor...',
+    qf_all_priorities: 'Todas las prioridades',
+    qf_all_statuses:   'Todos los estados',
+    qf_all_resp:       'Todos los responsables',
+    qf_all_projects:   'Todos los proyectos',
+    qf_resp_me:        '👤 Yo mismo',
+    qf_resp_other:     '👥 Otra persona',
+    qf_reset:          '✕ Limpiar filtros',
     modal_title:   'Editar tarea',
     lbl_task_name: 'Nombre de la tarea',
     task_placeholder: 'Nombre de la tarea...',
@@ -816,11 +875,20 @@ const I18N = {
     modal_origin_label: 'Source email',
     lbl_due:     'Due date',
     lbl_category:'Category',
+    lbl_vendor:  'Vendor',
+    vendor_placeholder: 'Vendor name...',
     cat_email:   '📧 Email',
     cat_meeting: '📅 Meeting',
     cat_task:    '✅ Task',
     cat_call:    '📞 Call',
     cat_other:   '📌 Other',
+    qf_all_priorities: 'All priorities',
+    qf_all_statuses:   'All statuses',
+    qf_all_resp:       'All assignees',
+    qf_all_projects:   'All projects',
+    qf_resp_me:        '👤 Myself',
+    qf_resp_other:     '👥 Other person',
+    qf_reset:          '✕ Clear filters',
   }
 };
 
@@ -950,9 +1018,34 @@ function applyLang(lang) {
   if (eDesc) eDesc.placeholder = t('desc_placeholder');
 
   // Tasks title for current tab
-  const titlesMap = { email: t('tasks_related'), all: t('tasks_all'), pinned: t('tasks_pinned') };
+  const titlesMap = { email: t('tasks_related'), all: t('tasks_all') };
   const titleEl = document.getElementById('tasks-title');
   if (titleEl) titleEl.textContent = titlesMap[currentTab] || t('tasks_related');
+
+  // Vendor placeholder
+  const eVendor = document.getElementById('edit-vendor');
+  if (eVendor) eVendor.placeholder = t('vendor_placeholder');
+
+  // Quick filter selects — re-traduir opcions
+  const qfPrio = document.getElementById('qf-priority');
+  if (qfPrio && qfPrio.options[0]) qfPrio.options[0].textContent = t('qf_all_priorities');
+  const qfStatus = document.getElementById('qf-status');
+  if (qfStatus) {
+    if (qfStatus.options[0]) qfStatus.options[0].textContent = t('qf_all_statuses');
+    if (qfStatus.options[1]) qfStatus.options[1].textContent = t('status_pending');
+    if (qfStatus.options[2]) qfStatus.options[2].textContent = t('status_progress');
+    if (qfStatus.options[3]) qfStatus.options[3].textContent = t('status_done');
+  }
+  const qfResp = document.getElementById('qf-resp');
+  if (qfResp) {
+    if (qfResp.options[0]) qfResp.options[0].textContent = t('qf_all_resp');
+    if (qfResp.options[1]) qfResp.options[1].textContent = t('qf_resp_me');
+    if (qfResp.options[2]) qfResp.options[2].textContent = t('qf_resp_other');
+  }
+  const qfProject = document.getElementById('qf-project');
+  if (qfProject && qfProject.options[0]) qfProject.options[0].textContent = t('qf_all_projects');
+  const qfReset = document.getElementById('quick-filters-bar')?.querySelector('.qf-reset');
+  if (qfReset) qfReset.textContent = t('qf_reset');
 
   // Re-render task list to update chips/labels
   renderTasks();
@@ -1276,15 +1369,53 @@ function switchTab(tab) {
     if (tasksArea)  tasksArea.style.display  = 'flex';
   }
 
+  // Banners i quick-create: només visibles a la pestanya 'email'
+  const linkedBanner = document.getElementById('linked-task-banner');
   const qc = document.getElementById('quick-create-section');
   if (tab === 'email') {
+    if (linkedBanner) linkedBanner.style.removeProperty('display'); // deixar que updateEmailTaskState ho controli
     qc.style.display = findLinkedTask() ? 'none' : 'block';
   } else {
+    if (linkedBanner) linkedBanner.style.display = 'none';
     qc.style.display = 'none';
+  }
+
+  // Filtres ràpids: només a 'all'
+  const filtersBar = document.getElementById('quick-filters-bar');
+  if (filtersBar) {
+    if (tab === 'all') {
+      filtersBar.classList.add('visible');
+      populateProjectFilter();
+    } else {
+      filtersBar.classList.remove('visible');
+    }
   }
 
   const titlesMap = { email: t('tasks_related'), all: t('tasks_all') };
   document.getElementById('tasks-title').textContent = titlesMap[tab] || t('tasks_related');
+  renderTasks();
+}
+
+// ── QUICK FILTERS HELPERS ────────────────────────────────────────
+function populateProjectFilter() {
+  const sel = document.getElementById('qf-project');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${t('qf_all_projects')}</option>`;
+  projects.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function resetFilters() {
+  ['qf-priority','qf-status','qf-resp','qf-project'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
   renderTasks();
 }
 
@@ -1301,6 +1432,17 @@ async function renderTasks() {
       const matchConv   = currentConvId  && taskConvId  && taskConvId  === currentConvId;
       return matchEmail || matchConv;
     });
+  } else if (currentTab === 'all') {
+    // Aplicar filtres ràpids
+    const fPrio    = (document.getElementById('qf-priority')?.value) || '';
+    const fStatus  = (document.getElementById('qf-status')?.value)   || '';
+    const fResp    = (document.getElementById('qf-resp')?.value)     || '';
+    const fProject = (document.getElementById('qf-project')?.value)  || '';
+    if (fPrio)    list = list.filter(t2 => String(t2.priority||3) === fPrio);
+    if (fStatus)  list = list.filter(t2 => t2.status === fStatus);
+    if (fResp === 'me')    list = list.filter(t2 => t2.resp === 'me' || t2.resp === 'followup');
+    if (fResp === 'other') list = list.filter(t2 => t2.resp === 'other' || t2.resp === 'responsible');
+    if (fProject) list = list.filter(t2 => String(t2.project||'') === fProject);
   }
   list.sort((a,b) => (b.created||0) - (a.created||0));
 
@@ -1500,6 +1642,28 @@ async function createTaskFromEmail() {
     : '';
   if (currentResp === 'other' && personName) savePerson(personName);
 
+  // Llegir badges actuals per aplicar config
+  const cfg = getConfig();
+  const flagM = cfg.flagMeaning || 'followup';
+  const pinM  = cfg.pinMeaning  || 'followup';
+  const badges = document.getElementById('email-badges');
+  const isFlaggedNow = badges ? badges.innerHTML.includes('badge-flagged') : false;
+  const isPinnedNow  = badges ? badges.innerHTML.includes('Pinned') : false;
+
+  // Determinar resp final tenint en compte config de flag/pin
+  let finalResp = currentResp;
+  const meaningToResp = (m) => (m === 'none') ? null : 'me';
+  if (isFlaggedNow && flagM !== 'none') {
+    finalResp = meaningToResp(flagM) || finalResp;
+  } else if (isPinnedNow && pinM !== 'none') {
+    finalResp = meaningToResp(pinM) || finalResp;
+  }
+
+  // Seguiment: aplicar config per defecte
+  const followupDaysVal = cfg.defaultFollowup !== undefined
+    ? cfg.defaultFollowup
+    : (parseInt(document.getElementById('followup-days-input').value) || 0);
+
   const task = {
     id: 'task_' + Date.now(),
     name: officeItem.subject || t('no_subject'),
@@ -1508,14 +1672,14 @@ async function createTaskFromEmail() {
     emailSubject: officeItem.subject,
     emailFrom: officeItem.from ? officeItem.from.emailAddress : '',
     conversationId: currentConvId,
-    resp: currentResp,
+    resp: finalResp,
     assigneeName: personName,
     priority: parseInt(document.getElementById('q-priority').value) || 3,
     status: 'pending',
     project: getProjectIdFromInput('q'),
     category: 'Email',
     due: '',
-    followupDays: parseInt(document.getElementById('followup-days-input').value) || 0,
+    followupDays: followupDaysVal,
     vendor: '',
     created: Date.now(),
     lastActivity: new Date().toISOString(),
@@ -1570,6 +1734,13 @@ async function openEditModal(taskId) {
   // Category
   const catSel = document.getElementById('edit-category');
   catSel.value = task.category || 'Email';
+
+  // Proveïdor
+  const vendorInp = document.getElementById('edit-vendor');
+  if (vendorInp) {
+    vendorInp.value = task.vendor || '';
+    vendorInp.placeholder = t('vendor_placeholder');
+  }
 
   // Banner email origen
   const originBanner = document.getElementById('edit-email-origin');
@@ -1637,6 +1808,7 @@ async function saveEditedTask() {
   task.followupDays = parseInt(document.getElementById('edit-followup-days-input').value) || 0;
   task.due          = document.getElementById('edit-due').value || '';
   task.category     = document.getElementById('edit-category').value || 'Email';
+  task.vendor       = (document.getElementById('edit-vendor')?.value || '').trim();
   task.lastActivity = new Date().toISOString();
 
   await saveTask(task);
