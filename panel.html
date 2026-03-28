@@ -768,10 +768,6 @@ function buildStatusOptions(selectId, selectedVal) {
   ).join('');
 }
 
-"
-      data-days="${days}" onclick="${clickFn.name}(${days})">${chips[i]}</div>`
-  ).join('');
-}
 
 // ══════════════════════════════════════════════════════════════
 // TASKFLOW — CORE APP
@@ -1335,9 +1331,6 @@ function closeEditModal() {
 }
 function onModalOverlayClick(e) {
   if (e.target === document.getElementById('edit-modal')) closeEditModal();
-}
-
-);
 }
 
 function selectEditResp(r) {
