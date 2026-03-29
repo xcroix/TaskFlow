@@ -191,6 +191,15 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .btn-delete{padding:9px 14px;background:var(--red-dim);color:var(--red);border:1.5px solid rgba(255,79,79,.3);border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .btn-delete:hover{background:var(--red);color:#fff;border-color:var(--red)}
 
+
+/* ── VIEWS PAGE ── */
+.views-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.views-selector{display:flex;gap:5px;padding:10px 14px 6px;flex-shrink:0;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.view-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border2);background:var(--surface3);cursor:pointer;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text3);transition:all .12s;white-space:nowrap}
+.view-btn.active{background:var(--accent-dim);color:var(--accent);border-color:rgba(139,126,255,.35)}
+.view-btn:hover:not(.active){color:var(--text2);border-color:var(--border2)}
+.views-project-select{padding:8px 14px 4px;flex-shrink:0}
+
 /* ── CONFIG PAGE ── */
 .config-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px}
 .config-section{background:var(--surface);border:1.5px solid var(--border2);border-radius:10px;overflow:hidden}
@@ -263,6 +272,7 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
     <div class="topbar-tabs">
       <div class="topbar-tab active" id="tab-email" onclick="switchTab('email')" data-i18n="tab_email">—</div>
       <div class="topbar-tab" id="tab-all" onclick="switchTab('all')" data-i18n="tab_all">—</div>
+      <div class="topbar-tab" id="tab-views" onclick="switchTab('views')" data-i18n="tab_views">—</div>
       <div class="topbar-tab" id="tab-config" onclick="switchTab('config')">⚙️</div>
     </div>
   </div>
@@ -382,6 +392,35 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
   <div id="task-list-inner">
     <div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> <span data-i18n="loading">—</span></div>
   </div>
+</div>
+
+
+<!-- VIEWS PAGE -->
+<div class="views-area" id="views-area" style="display:none">
+
+  <!-- Selector de vista -->
+  <div class="views-selector">
+    <button class="view-btn active" id="vbtn-mine"    onclick="selectView('mine')"    data-i18n="view_mine">—</button>
+    <button class="view-btn"        id="vbtn-followup" onclick="selectView('followup')" data-i18n="view_followup">—</button>
+    <button class="view-btn"        id="vbtn-project"  onclick="selectView('project')"  data-i18n="view_project">—</button>
+  </div>
+
+  <!-- Selector de projecte (només visible a 'project') -->
+  <div class="views-project-select" id="views-project-select" style="display:none">
+    <select class="qf-select" id="vf-project" onchange="renderViews()" style="width:100%;height:30px;font-size:12px">
+      <option value="" data-i18n="view_all_projects">—</option>
+    </select>
+  </div>
+
+  <!-- Llista de tasques de la vista -->
+  <div class="tasks-area" id="views-task-area" style="flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px">
+    <div class="tasks-header">
+      <span class="tasks-title" id="views-title">—</span>
+      <span class="tasks-count" id="views-count">0</span>
+    </div>
+    <div id="views-list-inner"></div>
+  </div>
+
 </div>
 
 <!-- CONFIG PAGE -->
@@ -592,6 +631,20 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
 const I18N = {
   ca: {
     // Tabs
+    tab_views: 'Vistes',
+    // Views page
+    view_mine:        '👤 Les meves',
+    view_followup:    '👁️ Seguiment',
+    view_project:     '📁 Projecte',
+    view_all_projects:'Tots els projectes',
+    view_mine_title:  'Les meves tasques',
+    view_followup_title: 'Seguiment pendent',
+    view_project_title: 'Tasques del projecte',
+    view_followup_empty: '📭 Cap tasca amb seguiment pendent per avui.',
+    view_mine_empty:  '📭 Cap tasca assignada a tu.',
+    view_project_empty: '📭 Cap tasca en aquest projecte.',
+    view_project_none: 'Tria un projecte',
+    // Tabs
     tab_email: 'Aquest email',
     tab_all:   'Totes',
     tab_pinned:'Pinned',
@@ -702,6 +755,18 @@ const I18N = {
   },
 
   es: {
+    tab_views: 'Vistas',
+    view_mine:        '👤 Las mías',
+    view_followup:    '👁️ Seguimiento',
+    view_project:     '📁 Proyecto',
+    view_all_projects:'Todos los proyectos',
+    view_mine_title:  'Mis tareas',
+    view_followup_title: 'Seguimiento pendiente',
+    view_project_title: 'Tareas del proyecto',
+    view_followup_empty: '📭 Ninguna tarea con seguimiento pendiente para hoy.',
+    view_mine_empty:  '📭 Ninguna tarea asignada a ti.',
+    view_project_empty: '📭 Ninguna tarea en este proyecto.',
+    view_project_none: 'Elige un proyecto',
     tab_email: 'Este email',
     tab_all:   'Todas',
     tab_pinned:'Pinned',
@@ -797,6 +862,18 @@ const I18N = {
   },
 
   en: {
+    tab_views: 'Views',
+    view_mine:        '👤 Mine',
+    view_followup:    '👁️ Follow-up',
+    view_project:     '📁 Project',
+    view_all_projects:'All projects',
+    view_mine_title:  'My tasks',
+    view_followup_title: 'Pending follow-up',
+    view_project_title: 'Project tasks',
+    view_followup_empty: '📭 No tasks with pending follow-up for today.',
+    view_mine_empty:  '📭 No tasks assigned to you.',
+    view_project_empty: '📭 No tasks in this project.',
+    view_project_none: 'Choose a project',
     tab_email: 'This email',
     tab_all:   'All',
     tab_pinned:'Pinned',
@@ -1047,8 +1124,16 @@ function applyLang(lang) {
   const qfReset = document.getElementById('quick-filters-bar')?.querySelector('.qf-reset');
   if (qfReset) qfReset.textContent = t('qf_reset');
 
+  // Retraduir botons de vista si la pàgina és visible
+  document.querySelectorAll('.view-btn[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  const vfp2 = document.getElementById('vf-project');
+  if (vfp2 && vfp2.options[0]) vfp2.options[0].textContent = t('view_all_projects');
+
   // Re-render task list to update chips/labels
   renderTasks();
+  if (currentTab === 'views') renderViews();
 }
 
 function setLang(lang) {
@@ -1350,49 +1435,195 @@ function editLinkedTask() {
   if (linked) openEditModal(linked.id);
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — VIEWS (vistes prefixades)
+// ══════════════════════════════════════════════════════════════
+
+let currentView = 'mine'; // 'mine' | 'followup' | 'project'
+
+function selectView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('vbtn-' + view);
+  if (btn) btn.classList.add('active');
+
+  // Mostrar/ocultar selector de projecte
+  const projSel = document.getElementById('views-project-select');
+  if (projSel) projSel.style.display = view === 'project' ? 'block' : 'none';
+
+  if (view === 'project') populateViewProjectSelect();
+  renderViews();
+}
+
+function populateViewProjectSelect() {
+  const sel = document.getElementById('vf-project');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${t('view_all_projects')}</option>`;
+  projects.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function renderViews() {
+  await loadData();
+  const container  = document.getElementById('views-list-inner');
+  const titleEl    = document.getElementById('views-title');
+  const countEl    = document.getElementById('views-count');
+  if (!container) return;
+
+  // Traduir títols dels botons de vista
+  document.querySelectorAll('.view-btn[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  // Traduir opció "Tots els projectes"
+  const vfp = document.getElementById('vf-project');
+  if (vfp && vfp.options[0]) vfp.options[0].textContent = t('view_all_projects');
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  let list = [];
+  let emptyMsg = '';
+  let title = '';
+
+  if (currentView === 'mine') {
+    // Tasques on sóc jo el responsable, en qualsevol estat menys 'done'
+    list = tasks.filter(task => {
+      const isMe = task.resp === 'me' || task.resp === 'followup';
+      return isMe && task.status !== 'done';
+    });
+    // Ordenar per prioritat (1=màxima → 5=mínima) i després per data creació
+    list.sort((a, b) => {
+      const pa = a.priority || 3, pb = b.priority || 3;
+      if (pa !== pb) return pa - pb;
+      return (b.created || 0) - (a.created || 0);
+    });
+    title    = t('view_mine_title');
+    emptyMsg = t('view_mine_empty');
+
+  } else if (currentView === 'followup') {
+    // Tasques amb seguiment que ha arribat o passat el dia de fer-lo, no tancades
+    list = tasks.filter(task => {
+      if (task.status === 'done') return false;
+      if (!task.followupDays || task.followupDays <= 0) return false;
+      // Calcular quan hauria de fer-se el seguiment: data de creació + followupDays
+      const created = new Date(task.created || Date.now());
+      created.setHours(0, 0, 0, 0);
+      const followupDate = new Date(created);
+      followupDate.setDate(followupDate.getDate() + task.followupDays);
+      return followupDate <= today;
+    });
+    // Ordenar per prioritat i per data de seguiment (les més endarrerides primer)
+    list.sort((a, b) => {
+      const pa = a.priority || 3, pb = b.priority || 3;
+      if (pa !== pb) return pa - pb;
+      return (a.created || 0) - (b.created || 0); // ASC: les més antigues primer
+    });
+    title    = t('view_followup_title');
+    emptyMsg = t('view_followup_empty');
+
+  } else if (currentView === 'project') {
+    const selProject = document.getElementById('vf-project')?.value || '';
+    if (!selProject) {
+      titleEl && (titleEl.textContent = t('view_project_title'));
+      countEl && (countEl.textContent = '0');
+      container.innerHTML = `<div class="empty-msg">${t('view_project_none')}</div>`;
+      return;
+    }
+    list = tasks.filter(task => task.project === selProject && task.status !== 'done');
+    list.sort((a, b) => {
+      const pa = a.priority || 3, pb = b.priority || 3;
+      if (pa !== pb) return pa - pb;
+      return (b.created || 0) - (a.created || 0);
+    });
+    const proj = projects.find(p => p.id === selProject);
+    title    = proj ? `${t('view_project_title')}: ${proj.name}` : t('view_project_title');
+    emptyMsg = t('view_project_empty');
+  }
+
+  if (titleEl) titleEl.textContent = title;
+  if (countEl) countEl.textContent = list.length;
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-msg">${emptyMsg}</div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  list.forEach(task => {
+    const el = buildTaskItem(task);
+    el.addEventListener('click', (e) => {
+      if (e.target.classList.contains('ti-check') || e.target.closest('.ti-check')) return;
+      openEditModal(task.id);
+    });
+    container.appendChild(el);
+  });
+}
+
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.topbar-tab').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 
-  // Mostrar/ocultar la pàgina de configuració
-  const configArea  = document.getElementById('config-area');
-  const tasksArea   = document.getElementById('tasks-area');
+  // Elements que apareixen/desapareixen per tab
+  const configArea   = document.getElementById('config-area');
+  const tasksArea    = document.getElementById('tasks-area');
+  const viewsArea    = document.getElementById('views-area');
+  const emailCard    = document.getElementById('email-card');
+  const linkedBanner = document.getElementById('linked-task-banner');
+  const qc           = document.getElementById('quick-create-section');
+  const filtersBar   = document.getElementById('quick-filters-bar');
+
+  // Amagar-ho tot per defecte i activar el que toca
+  if (configArea)  configArea.style.display  = 'none';
+  if (viewsArea)   viewsArea.style.display   = 'none';
+  if (tasksArea)   tasksArea.style.display   = 'none';
+  if (filtersBar)  filtersBar.classList.remove('visible');
+
   if (tab === 'config') {
-    if (configArea) configArea.style.display = 'flex';
-    if (tasksArea)  tasksArea.style.display  = 'none';
+    if (emailCard)    emailCard.style.display    = 'none';
+    if (linkedBanner) linkedBanner.style.display = 'none';
+    if (qc)           qc.style.display           = 'none';
+    if (configArea)   configArea.style.display   = 'flex';
     loadConfigUI();
     return;
-  } else {
-    if (configArea) configArea.style.display = 'none';
-    if (tasksArea)  tasksArea.style.display  = 'flex';
   }
 
-  // Banners i quick-create: només visibles a la pestanya 'email'
-  const linkedBanner = document.getElementById('linked-task-banner');
-  const qc = document.getElementById('quick-create-section');
-  if (tab === 'email') {
-    if (linkedBanner) linkedBanner.style.removeProperty('display'); // deixar que updateEmailTaskState ho controli
-    qc.style.display = findLinkedTask() ? 'none' : 'block';
-  } else {
+  if (tab === 'views') {
+    if (emailCard)    emailCard.style.display    = 'none';
     if (linkedBanner) linkedBanner.style.display = 'none';
-    qc.style.display = 'none';
+    if (qc)           qc.style.display           = 'none';
+    if (viewsArea)    viewsArea.style.display     = 'flex';
+    renderViews();
+    return;
   }
 
-  // Filtres ràpids: només a 'all'
-  const filtersBar = document.getElementById('quick-filters-bar');
-  if (filtersBar) {
-    if (tab === 'all') {
+  if (tab === 'all') {
+    if (emailCard)    emailCard.style.display    = 'none';
+    if (linkedBanner) linkedBanner.style.display = 'none';
+    if (qc)           qc.style.display           = 'none';
+    if (tasksArea)    tasksArea.style.display     = 'flex';
+    if (filtersBar) {
       filtersBar.classList.add('visible');
       populateProjectFilter();
-    } else {
-      filtersBar.classList.remove('visible');
     }
+    document.getElementById('tasks-title').textContent = t('tasks_all');
+    renderTasks();
+    return;
   }
 
-  const titlesMap = { email: t('tasks_related'), all: t('tasks_all') };
-  document.getElementById('tasks-title').textContent = titlesMap[tab] || t('tasks_related');
+  // tab === 'email'
+  if (emailCard)    emailCard.style.display = '';        // visible
+  if (linkedBanner) linkedBanner.style.removeProperty('display'); // updateEmailTaskState ho controla
+  if (qc)           qc.style.display = findLinkedTask() ? 'none' : 'block';
+  if (tasksArea)    tasksArea.style.display = 'flex';
+  document.getElementById('tasks-title').textContent = t('tasks_related');
   renderTasks();
 }
 
@@ -1534,6 +1765,7 @@ async function toggleTask(id, e) {
   found.status = found.status === 'done' ? 'pending' : 'done';
   await saveTask(found);
   await updateEmailTaskState();
+  if (currentTab === 'views') { renderViews(); return; }
   renderTasks();
 }
 
