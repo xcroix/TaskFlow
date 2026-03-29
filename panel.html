@@ -1441,11 +1441,13 @@ function editLinkedTask() {
 // ══════════════════════════════════════════════════════════════
 
 let currentView = 'mine'; // 'mine' | 'followup' | 'project'
+let currentProjectId = '';
+let editProjectId = '';
+let currentResp = 'me';
+let editResp = 'me';
 
 function selectView(view) {
   currentView = view;
-  const vf = document.getElementById('vf-project');
-  if (vf) sessionStorage.setItem('taskflow_views_project', vf.value || '');
   document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('vbtn-' + view);
   if (btn) btn.classList.add('active');
@@ -1460,8 +1462,7 @@ function selectView(view) {
 function populateViewProjectSelect() {
   const sel = document.getElementById('vf-project');
   if (!sel) return;
-  const saved = sessionStorage.getItem('taskflow_views_project') || '';
-  const current = sel.value || saved;
+  const current = sel.value;
   sel.innerHTML = `<option value="">${t('view_all_projects')}</option>`;
   projects.forEach(p => {
     const opt = document.createElement('option');
@@ -1470,7 +1471,6 @@ function populateViewProjectSelect() {
     sel.appendChild(opt);
   });
   sel.value = projects.some(p => p.id === current) ? current : '';
-  sessionStorage.setItem('taskflow_views_project', sel.value || '');
 }
 
 async function renderViews() {
@@ -1802,8 +1802,10 @@ function onPersonInput(val) {
   dd.style.display = 'block';
 }
 function selectPerson(name) {
-  document.getElementById('q-person-name').value = name;
-  document.getElementById('person-dropdown').style.display = 'none';
+  const inp = document.getElementById('q-person-name');
+  if (inp) inp.value = name;
+  const dd = document.getElementById('person-dropdown');
+  if (dd) dd.style.display = 'none';
   currentPersonName = name;
 }
 function hidePersonDropdown() {
@@ -1824,8 +1826,10 @@ function onProjectInput(prefix, val) {
   dd.style.display = 'block';
 }
 function selectProject(prefix, id, name) {
-  document.getElementById(prefix + '-project-input').value = name;
-  document.getElementById(prefix + '-project-dropdown').style.display = 'none';
+  const inp = document.getElementById(prefix + '-project-input');
+  if (inp) inp.value = name;
+  const dd = document.getElementById(prefix + '-project-dropdown');
+  if (dd) dd.style.display = 'none';
   if (prefix === 'q') currentProjectId = id;
   else editProjectId = id;
 }
@@ -1835,21 +1839,21 @@ function hideProjectDropdown(prefix) {
   }, 150);
 }
 function getProjectIdFromInput(prefix) {
+  // Retorna l'id del projecte seleccionat, o crea un nou si el nom no existeix
   const inputId = prefix + '-project-input';
   const inp = document.getElementById(inputId);
   if (!inp) return '';
   const val = inp.value.trim();
   if (!val) return '';
-  const direct = prefix === 'q' ? currentProjectId : editProjectId;
-  if (direct && projects.some(p => p.id === direct)) return direct;
+  // Buscar projecte existent per nom (case-insensitive)
   const existing = projects.find(p => p.name.toLowerCase() === val.toLowerCase());
   if (existing) return existing.id;
+  // Crear nou projecte
   const newId = 'proj_' + Date.now();
   const colors = ['#8b7eff','#00f090','#ff9d2e','#1ab8ff','#ff4f4f','#ffe033'];
   const newProj = { id: newId, name: val, color: colors[projects.length % colors.length] };
   TaskFlowDB.putProject(newProj);
   projects.push(newProj);
-  if (prefix === 'q') currentProjectId = newId; else editProjectId = newId;
   return newId;
 }
 function setProjectInput(prefix, projectId) {
@@ -1862,7 +1866,6 @@ function setProjectInput(prefix, projectId) {
 
 // ── CREATE TASK ───────────────────────────────────────────────
 async function createTaskFromEmail() {
-  currentProjectId = getProjectIdFromInput('q');
   if (!officeItem) return;
   const btn = document.getElementById('btn-create');
   btn.disabled = true;
@@ -1874,6 +1877,7 @@ async function createTaskFromEmail() {
     return;
   }
 
+  currentProjectId = getProjectIdFromInput('q');
   const personName = currentResp === 'other'
     ? (document.getElementById('q-person-name').value || '').trim()
     : '';
