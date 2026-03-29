@@ -1441,10 +1441,6 @@ function editLinkedTask() {
 // ══════════════════════════════════════════════════════════════
 
 let currentView = 'mine'; // 'mine' | 'followup' | 'project'
-let currentProjectId = '';
-let editProjectId = '';
-let currentResp = 'me';
-let editResp = 'me';
 
 function selectView(view) {
   currentView = view;
@@ -1452,6 +1448,7 @@ function selectView(view) {
   const btn = document.getElementById('vbtn-' + view);
   if (btn) btn.classList.add('active');
 
+  // Mostrar/ocultar selector de projecte
   const projSel = document.getElementById('views-project-select');
   if (projSel) projSel.style.display = view === 'project' ? 'block' : 'none';
 
@@ -1802,11 +1799,8 @@ function onPersonInput(val) {
   dd.style.display = 'block';
 }
 function selectPerson(name) {
-  const inp = document.getElementById('q-person-name');
-  if (inp) inp.value = name;
-  const dd = document.getElementById('person-dropdown');
-  if (dd) dd.style.display = 'none';
-  currentPersonName = name;
+  document.getElementById('q-person-name').value = name;
+  document.getElementById('person-dropdown').style.display = 'none';
 }
 function hidePersonDropdown() {
   setTimeout(() => { document.getElementById('person-dropdown').style.display = 'none'; }, 150);
@@ -1826,10 +1820,8 @@ function onProjectInput(prefix, val) {
   dd.style.display = 'block';
 }
 function selectProject(prefix, id, name) {
-  const inp = document.getElementById(prefix + '-project-input');
-  if (inp) inp.value = name;
-  const dd = document.getElementById(prefix + '-project-dropdown');
-  if (dd) dd.style.display = 'none';
+  document.getElementById(prefix + '-project-input').value = name;
+  document.getElementById(prefix + '-project-dropdown').style.display = 'none';
   if (prefix === 'q') currentProjectId = id;
   else editProjectId = id;
 }
@@ -1839,21 +1831,24 @@ function hideProjectDropdown(prefix) {
   }, 150);
 }
 function getProjectIdFromInput(prefix) {
-  // Retorna l'id del projecte seleccionat, o crea un nou si el nom no existeix
   const inputId = prefix + '-project-input';
   const inp = document.getElementById(inputId);
   if (!inp) return '';
   const val = inp.value.trim();
   if (!val) return '';
-  // Buscar projecte existent per nom (case-insensitive)
+  const selected = prefix === 'q' ? currentProjectId : editProjectId;
+  if (selected && projects.some(p => p.id === selected)) return selected;
   const existing = projects.find(p => p.name.toLowerCase() === val.toLowerCase());
-  if (existing) return existing.id;
-  // Crear nou projecte
+  if (existing) {
+    if (prefix === 'q') currentProjectId = existing.id; else editProjectId = existing.id;
+    return existing.id;
+  }
   const newId = 'proj_' + Date.now();
   const colors = ['#8b7eff','#00f090','#ff9d2e','#1ab8ff','#ff4f4f','#ffe033'];
   const newProj = { id: newId, name: val, color: colors[projects.length % colors.length] };
   TaskFlowDB.putProject(newProj);
   projects.push(newProj);
+  if (prefix === 'q') currentProjectId = newId; else editProjectId = newId;
   return newId;
 }
 function setProjectInput(prefix, projectId) {
@@ -1877,7 +1872,6 @@ async function createTaskFromEmail() {
     return;
   }
 
-  currentProjectId = getProjectIdFromInput('q');
   const personName = currentResp === 'other'
     ? (document.getElementById('q-person-name').value || '').trim()
     : '';
@@ -2029,7 +2023,7 @@ function hideEditPersonDropdown() {
   setTimeout(() => { document.getElementById('edit-person-dropdown').style.display = 'none'; }, 150);
 }
 
-async async function saveEditedTask() {
+async function saveEditedTask() {
   if (!editingTaskId) return;
   const task = await TaskFlowDB.getTask(editingTaskId);
   if (!task) return;
@@ -2043,8 +2037,7 @@ async async function saveEditedTask() {
   task.desc         = document.getElementById('edit-desc').value;
   task.priority     = parseInt(document.getElementById('edit-priority').value) || 3;
   task.status       = document.getElementById('edit-status').value;
-  editProjectId     = getProjectIdFromInput('edit');
-  task.project      = editProjectId;
+  task.project      = getProjectIdFromInput('edit');
   task.resp         = editResp;
   task.assigneeName = personName;
   task.followupDays = parseInt(document.getElementById('edit-followup-days-input').value) || 0;
