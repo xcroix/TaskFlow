@@ -222,6 +222,75 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-s
 .btn-config-save:hover{background:var(--accent2);transform:translateY(-1px)}
 .config-saved-flash{text-align:center;font-size:11px;font-weight:700;color:var(--green);padding:4px;display:none}
 
+
+/* ── TIME TRACKING ── */
+.time-section{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--border)}
+.time-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.time-section-title{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:5px}
+.time-total-badge{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,157,46,.3)}
+.time-log-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;max-height:130px;overflow-y:auto}
+.time-log-item{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+.time-log-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;min-width:38px}
+.time-log-mins{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--orange);flex-shrink:0;min-width:48px}
+.time-log-note{font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.time-log-del{width:16px;height:16px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;padding:0;font-family:'Syne',sans-serif;line-height:1}
+.time-log-del:hover{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.time-add-row{display:flex;gap:6px;align-items:center}
+.time-mins-input{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;outline:none;width:64px;text-align:center;transition:border-color .12s;-moz-appearance:textfield}
+.time-mins-input:focus{border-color:var(--orange)}
+.time-mins-input::-webkit-inner-spin-button,.time-mins-input::-webkit-outer-spin-button{-webkit-appearance:none}
+.time-note-input{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:400;outline:none;flex:1;transition:border-color .12s}
+.time-note-input:focus{border-color:var(--orange)}
+.time-note-input::placeholder{color:var(--text3)}
+.btn-time-add{padding:6px 11px;background:var(--orange-dim);color:var(--orange);border:1.5px solid rgba(255,157,46,.35);border-radius:6px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;white-space:nowrap;flex-shrink:0}
+.btn-time-add:hover{background:var(--orange);color:#fff}
+.ti-chip.time{background:var(--orange-dim);color:var(--orange);border-color:rgba(255,157,46,.3)}
+
+/* ── RECURRENT TASK ── */
+.recur-section{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--border)}
+.recur-toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.recur-toggle-label{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border:1.5px solid var(--border2);border-radius:20px;cursor:pointer;transition:all .2s}
+.toggle-slider:before{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:var(--text3);left:3px;top:50%;transform:translateY(-50%);transition:all .2s}
+.toggle-switch input:checked + .toggle-slider{background:var(--green-dim);border-color:var(--green)}
+.toggle-switch input:checked + .toggle-slider:before{background:var(--green);left:18px}
+.recur-config{display:none;gap:8px;align-items:center;flex-wrap:wrap}
+.recur-config.visible{display:flex}
+.recur-num{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;font-weight:700;outline:none;width:56px;text-align:center;transition:border-color .12s;-moz-appearance:textfield}
+.recur-num:focus{border-color:var(--green)}
+.recur-num::-webkit-inner-spin-button{-webkit-appearance:none}
+.recur-unit{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;outline:none;cursor:pointer;transition:border-color .12s}
+.recur-unit:focus{border-color:var(--green)}
+.ti-chip.recur{background:rgba(0,240,144,.08);color:var(--green);border-color:rgba(0,240,144,.3)}
+
+/* ── FOLLOWUP DATE ── */
+.followup-date-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.followup-date-display{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-dim);padding:3px 8px;border-radius:6px;border:1px solid rgba(26,184,255,.3)}
+.ti-chip.followup-due{background:var(--blue-dim);color:var(--blue);border-color:rgba(26,184,255,.3)}
+.ti-chip.followup-overdue{background:var(--red-dim);color:var(--red);border-color:rgba(255,79,79,.3)}
+
+/* ── RELATED TASKS ── */
+.related-section{margin-top:14px;padding-top:12px;border-top:1.5px solid var(--border)}
+.related-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.related-item{display:flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;cursor:pointer;transition:all .12s}
+.related-item:hover{border-color:var(--accent)}
+.related-item-name{font-size:11px;font-weight:600;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.related-item-prio{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;border:1.5px solid;flex-shrink:0}
+.related-del{width:16px;height:16px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text3);font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;padding:0;font-family:'Syne',sans-serif}
+.related-del:hover{border-color:var(--red);color:var(--red)}
+.related-add-row{display:flex;gap:6px;align-items:center}
+.related-search{background:var(--surface2);border:1.5px solid var(--border2);border-radius:6px;padding:6px 9px;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:400;outline:none;flex:1;transition:border-color .12s}
+.related-search:focus{border-color:var(--accent)}
+.related-search::placeholder{color:var(--text3)}
+.related-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--accent);border-top:none;border-radius:0 0 7px 7px;z-index:150;max-height:130px;overflow-y:auto;display:none}
+.related-dropdown.open{display:block}
+.related-opt{padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:background .1s;border-bottom:1px solid var(--border)}
+.related-opt:last-child{border-bottom:none}
+.related-opt:hover{background:var(--accent-dim);color:var(--accent)}
+.related-opt-new{color:var(--green);font-style:italic}
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 /* ── LOADING ── */
@@ -616,6 +685,65 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
       </div>
     </div>
 
+
+    <!-- ── TIME TRACKING ── -->
+    <div class="time-section">
+      <div class="time-section-header">
+        <div class="time-section-title">⏱️ <span data-i18n="lbl_time">—</span></div>
+        <span class="time-total-badge" id="time-total-badge" style="display:none">—</span>
+      </div>
+      <div class="time-log-list" id="time-log-list"></div>
+      <div class="time-add-row">
+        <input class="time-mins-input" id="time-mins" type="number" min="1" max="9999" placeholder="min">
+        <input class="time-note-input" id="time-note" type="text" data-i18n-placeholder="time_note_ph">
+        <button class="btn-time-add" onclick="addTimeEntry()" data-i18n="btn_time_add">—</button>
+      </div>
+    </div>
+
+    <!-- ── SEGUIMENT — DATA CALCULADA ── -->
+    <div class="modal-field" style="margin-top:12px">
+      <div class="modal-label">👁️ <span data-i18n="lbl_followup_date">—</span></div>
+      <div class="followup-date-row">
+        <span class="followup-date-display" id="followup-date-display">—</span>
+        <span style="font-size:11px;color:var(--text3)" data-i18n="followup_date_hint">—</span>
+      </div>
+    </div>
+
+    <!-- ── TASQUES RELACIONADES ── -->
+    <div class="related-section">
+      <div class="time-section-header">
+        <div class="time-section-title">🔗 <span data-i18n="lbl_related">—</span></div>
+      </div>
+      <div class="related-list" id="related-list"></div>
+      <div class="person-input-wrap related-add-row">
+        <input class="related-search" id="related-search" type="text"
+          data-i18n-placeholder="related_search_ph"
+          oninput="onRelatedSearch(this.value)" onblur="hideRelatedDropdown()">
+        <div class="related-dropdown" id="related-dropdown"></div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVITAT PERIÒDICA ── -->
+    <div class="recur-section">
+      <div class="recur-toggle-row">
+        <span class="recur-toggle-label">🔄 <span data-i18n="lbl_recur">—</span></span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="recur-toggle" onchange="onRecurToggle()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="recur-config" id="recur-config">
+        <span style="font-size:12px;color:var(--text3)" data-i18n="recur_every">—</span>
+        <input class="recur-num" id="recur-num" type="number" min="1" max="365" value="1">
+        <select class="recur-unit" id="recur-unit">
+          <option value="days" data-i18n="recur_days">—</option>
+          <option value="weeks" data-i18n="recur_weeks">—</option>
+          <option value="months" data-i18n="recur_months">—</option>
+        </select>
+        <span style="font-size:10px;color:var(--text3);margin-top:4px;width:100%" data-i18n="recur_hint">—</span>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-delete" onclick="deleteCurrentTask()" data-i18n="btn_delete">—</button>
       <button class="btn-save" onclick="saveEditedTask()" data-i18n="btn_save">—</button>
@@ -630,6 +758,37 @@ body,.topbar,.topbar-row1,.topbar-row2,.email-card,.quick-create,.tasks-area,.ta
 
 const I18N = {
   ca: {
+    // Time tracking
+    lbl_time:             'Temps dedicat',
+    time_note_ph:         'Nota opcional...',
+    btn_time_add:         '＋',
+    time_empty:           'Sense registres de temps.',
+    time_h:               'h',
+    time_min:             'min',
+    // Seguiment data
+    lbl_followup_date:    'Data de seguiment',
+    followup_date_hint:   '(data creació + dies de seguiment)',
+    followup_no_date:     'Sense data',
+    // Tasques relacionades
+    lbl_related:          'Tasques relacionades',
+    related_search_ph:    'Cerca o crea tasca...',
+    related_new_prefix:   'Crear nova: ',
+    related_empty:        'Cap tasca relacionada.',
+    related_open:         'Obrir',
+    // Activitat periòdica
+    lbl_recur:            'Activitat periòdica',
+    recur_every:          'Cada',
+    recur_days:           'dies',
+    recur_weeks:          'setmanes',
+    recur_months:         'mesos',
+    recur_hint:           'En marcar com a Feta, es generarà automàticament la propera repetició.',
+    recur_group_label:    'Periòdica',
+    chip_recur:           '🔄',
+    chip_time:            '⏱️',
+    followup_due_today:   '👁️ avui',
+    followup_overdue_prefix: '👁️ -',
+    // Categories → projectes
+    cat_project_created:  'Projecte creat des de categoria Outlook',
     // Tabs
     tab_views: 'Vistes',
     // Views page
@@ -755,6 +914,32 @@ const I18N = {
   },
 
   es: {
+    lbl_time:             'Tiempo dedicado',
+    time_note_ph:         'Nota opcional...',
+    btn_time_add:         '＋',
+    time_empty:           'Sin registros de tiempo.',
+    time_h:               'h',
+    time_min:             'min',
+    lbl_followup_date:    'Fecha de seguimiento',
+    followup_date_hint:   '(fecha creación + días de seguimiento)',
+    followup_no_date:     'Sin fecha',
+    lbl_related:          'Tareas relacionadas',
+    related_search_ph:    'Busca o crea tarea...',
+    related_new_prefix:   'Crear nueva: ',
+    related_empty:        'Sin tareas relacionadas.',
+    related_open:         'Abrir',
+    lbl_recur:            'Actividad periódica',
+    recur_every:          'Cada',
+    recur_days:           'días',
+    recur_weeks:          'semanas',
+    recur_months:         'meses',
+    recur_hint:           'Al marcar como Hecha, se generará automáticamente la próxima repetición.',
+    recur_group_label:    'Periódica',
+    chip_recur:           '🔄',
+    chip_time:            '⏱️',
+    followup_due_today:   '👁️ hoy',
+    followup_overdue_prefix: '👁️ -',
+    cat_project_created:  'Proyecto creado desde categoría Outlook',
     tab_views: 'Vistas',
     view_mine:        '👤 Las mías',
     view_followup:    '👁️ Seguimiento',
@@ -862,6 +1047,32 @@ const I18N = {
   },
 
   en: {
+    lbl_time:             'Time spent',
+    time_note_ph:         'Optional note...',
+    btn_time_add:         '＋',
+    time_empty:           'No time entries yet.',
+    time_h:               'h',
+    time_min:             'min',
+    lbl_followup_date:    'Follow-up date',
+    followup_date_hint:   '(creation date + follow-up days)',
+    followup_no_date:     'No date',
+    lbl_related:          'Related tasks',
+    related_search_ph:    'Search or create task...',
+    related_new_prefix:   'Create new: ',
+    related_empty:        'No related tasks.',
+    related_open:         'Open',
+    lbl_recur:            'Recurring activity',
+    recur_every:          'Every',
+    recur_days:           'days',
+    recur_weeks:          'weeks',
+    recur_months:         'months',
+    recur_hint:           'When marked as Done, the next occurrence will be created automatically.',
+    recur_group_label:    'Recurring',
+    chip_recur:           '🔄',
+    chip_time:            '⏱️',
+    followup_due_today:   '👁️ today',
+    followup_overdue_prefix: '👁️ -',
+    cat_project_created:  'Project created from Outlook category',
     tab_views: 'Views',
     view_mine:        '👤 Mine',
     view_followup:    '👁️ Follow-up',
@@ -1354,10 +1565,18 @@ async function bindEmailContext() {
   // Gestió de categories i badges (callback-based)
   officeItem.categories.getAsync(result => {
     const cats = result.status === Office.AsyncResultStatus.Succeeded ? result.value : [];
+
+    // Sincronitzar categories Outlook → projectes TaskFlow
+    if (cats.length > 0) {
+      await syncCategoriesToProjects(cats);
+    }
+
     const isPinned = cats.some(c =>
       (c.displayName||'').toLowerCase().includes('pinned') ||
       (c.displayName||'').toLowerCase().includes('anclado')
     );
+    // Guardar categories per a ús posterior en createTaskFromEmail
+    window._currentEmailCategories = cats;
 
     const renderBadges = async (hasAttach) => {
       const flagStatus = officeItem.flag ? officeItem.flag.status : 'notFlagged';
@@ -1511,12 +1730,8 @@ async function renderViews() {
     list = tasks.filter(task => {
       if (task.status === 'done') return false;
       if (!task.followupDays || task.followupDays <= 0) return false;
-      // Calcular quan hauria de fer-se el seguiment: data de creació + followupDays
-      const created = new Date(task.created || Date.now());
-      created.setHours(0, 0, 0, 0);
-      const followupDate = new Date(created);
-      followupDate.setDate(followupDate.getDate() + task.followupDays);
-      return followupDate <= today;
+      const followupDate = calcFollowupDate(task);
+      return followupDate && followupDate <= today;
     });
     // Ordenar per prioritat i per data de seguiment (les més endarrerides primer)
     list.sort((a, b) => {
@@ -1740,6 +1955,36 @@ function buildTaskItem(task) {
     dueChip = '<span class="ti-chip" style="' + dueColor + '">' + (isOverdue ? '⚠️' : '📅') + ' ' + dueStr + '</span>';
   }
 
+  // Chip seguiment amb data real
+  let followupChip = '';
+  if (task.followupDays > 0) {
+    const fd = calcFollowupDate(task);
+    const today2 = new Date(); today2.setHours(0,0,0,0);
+    if (fd) {
+      const diff = Math.round((fd - today2) / 86400000);
+      if (diff <= 0) {
+        const cls = diff < 0 ? 'followup-overdue' : 'followup-due';
+        const lbl = diff < 0 ? `${t('followup_overdue_prefix')}${Math.abs(diff)}d` : t('followup_due_today');
+        followupChip = `<span class="ti-chip ${cls}">${lbl}</span>`;
+      } else {
+        followupChip = `<span class="ti-chip followup">👁️ ${diff}d</span>`;
+      }
+    }
+  }
+
+  // Chip recurrència
+  let recurChip = '';
+  if (task.recur?.enabled) {
+    recurChip = `<span class="ti-chip recur">${t('chip_recur')} ${task.recur.num}${task.recur.unit==='days'?'d':task.recur.unit==='weeks'?'s':'m'}</span>`;
+  }
+
+  // Chip temps total
+  let timeChip = '';
+  const tMins = totalTaskMins(task);
+  if (tMins > 0) {
+    timeChip = `<span class="ti-chip time">${t('chip_time')} ${fmtMins(tMins)}</span>`;
+  }
+
   div.innerHTML = `
     <span class="ti-edit-hint">✏️</span>
     <div class="ti-top">
@@ -1752,7 +1997,7 @@ function buildTaskItem(task) {
       <div class="ti-priority p${task.priority||3}">${task.priority||3}</div>
       ${proj?`<span class="ti-chip" style="color:${proj.color};border-color:${proj.color}40;background:${proj.color}18">${escHtml(proj.name)}</span>`:''}
       <span class="ti-chip ${stMap[task.status]||'pending'}">${stLabel[task.status]||t('status_pending')}</span>
-      ${respChip}${fChip}${dueChip}
+      ${respChip}${followupChip}${dueChip}${recurChip}${timeChip}
       ${isCurrent?`<span class="ti-chip email">📧 ${t('chip_email')}</span>`:''}
     </div>`;
   return div;
@@ -1762,11 +2007,16 @@ async function toggleTask(id, e) {
   e.stopPropagation();
   const found = await TaskFlowDB.getTask(id);
   if (!found) return;
-  found.status = found.status === 'done' ? 'pending' : 'done';
+  const wasDone = found.status === 'done';
+  found.status = wasDone ? 'pending' : 'done';
   await saveTask(found);
+  // Si acabem de marcar com a Feta i és recurrent, generar propera repetició
+  if (!wasDone && found.status === 'done' && found.recur?.enabled) {
+    await spawnNextRecurrence(found);
+    await loadData();
+  }
   await updateEmailTaskState();
-  if (currentTab === 'views') { renderViews(); return; }
-  renderTasks();
+  refreshAllLists();
 }
 
 // ── FOLLOWUP INPUT ───────────────────────────────────────────
@@ -1911,7 +2161,7 @@ async function createTaskFromEmail() {
     assigneeName: personName,
     priority: parseInt(document.getElementById('q-priority').value) || 3,
     status: 'pending',
-    project: getProjectIdFromInput('q'),
+    project: getProjectIdFromInput('q') || getProjectIdFromCategories(window._currentEmailCategories || []),
     category: 'Email',
     due: '',
     followupDays: followupDaysVal,
@@ -1934,6 +2184,352 @@ function showFlash(msg) {
   f.style.display = 'block';
   setTimeout(() => f.style.display = 'none', 3000);
 }
+
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — TIME TRACKING
+// task.timeLog = [{date, mins, note}]
+// ══════════════════════════════════════════════════════════════
+
+function fmtMins(m) {
+  if (!m || m <= 0) return '0 ' + t('time_min');
+  if (m < 60) return m + ' ' + t('time_min');
+  const h = Math.floor(m / 60), r = m % 60;
+  return r > 0 ? `${h}${t('time_h')} ${r}${t('time_min')}` : `${h}${t('time_h')}`;
+}
+function totalTaskMins(task) {
+  return (task.timeLog || []).reduce((s, e) => s + (e.mins || 0), 0);
+}
+
+function renderTimeSection(task) {
+  const list  = document.getElementById('time-log-list');
+  const badge = document.getElementById('time-total-badge');
+  if (!list) return;
+  const log   = task.timeLog || [];
+  const total = totalTaskMins(task);
+  if (badge) {
+    badge.textContent = fmtMins(total);
+    badge.style.display = total > 0 ? '' : 'none';
+  }
+  if (!log.length) {
+    list.innerHTML = `<div class="time-empty" style="font-size:11px;color:var(--text3);padding:6px 0;font-style:italic">${t('time_empty')}</div>`;
+    return;
+  }
+  const localeMap = {en:'en-GB', es:'es-ES', ca:'ca-ES'};
+  list.innerHTML = '';
+  [...log].reverse().forEach((entry, revIdx) => {
+    const realIdx = log.length - 1 - revIdx;
+    const d = new Date(entry.date);
+    const ds = d.toLocaleDateString(localeMap[currentLang]||'es-ES', {day:'2-digit', month:'2-digit'});
+    const row = document.createElement('div');
+    row.className = 'time-log-item';
+    row.innerHTML = `
+      <span class="time-log-date">${ds}</span>
+      <span class="time-log-mins">${fmtMins(entry.mins)}</span>
+      <span class="time-log-note">${escHtml(entry.note||'')}</span>
+      <button class="time-log-del" onclick="deleteTimeEntry(${realIdx})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+async function addTimeEntry() {
+  if (!editingTaskId) return;
+  const mins = parseInt(document.getElementById('time-mins').value) || 0;
+  if (mins <= 0) return;
+  const task = await TaskFlowDB.getTask(editingTaskId);
+  if (!task) return;
+  if (!task.timeLog) task.timeLog = [];
+  task.timeLog.push({
+    date: new Date().toISOString(),
+    mins,
+    note: (document.getElementById('time-note').value || '').trim()
+  });
+  task.lastActivity = new Date().toISOString();
+  await saveTask(task);
+  document.getElementById('time-mins').value = '';
+  document.getElementById('time-note').value = '';
+  renderTimeSection(task);
+  refreshAllLists();
+}
+
+async function deleteTimeEntry(idx) {
+  if (!editingTaskId) return;
+  const task = await TaskFlowDB.getTask(editingTaskId);
+  if (!task || !task.timeLog) return;
+  task.timeLog.splice(idx, 1);
+  await saveTask(task);
+  renderTimeSection(task);
+  refreshAllLists();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — SEGUIMENT: DATA CALCULADA
+// task.followupDate = ISO string calculada en desar
+// ══════════════════════════════════════════════════════════════
+
+function calcFollowupDate(task) {
+  if (!task.followupDays || task.followupDays <= 0) return null;
+  const base = new Date(task.created || Date.now());
+  base.setHours(0, 0, 0, 0);
+  base.setDate(base.getDate() + task.followupDays);
+  return base;
+}
+
+function renderFollowupDate(task) {
+  const el = document.getElementById('followup-date-display');
+  if (!el) return;
+  const d = calcFollowupDate(task);
+  if (!d) { el.textContent = t('followup_no_date'); el.style.opacity = '.4'; return; }
+  el.style.opacity = '1';
+  const localeMap = {en:'en-GB', es:'es-ES', ca:'ca-ES'};
+  el.textContent = d.toLocaleDateString(localeMap[currentLang]||'es-ES', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — RELATED TASKS
+// task.relatedIds = [taskId, ...]
+// ══════════════════════════════════════════════════════════════
+
+function renderRelatedSection(task) {
+  const list = document.getElementById('related-list');
+  if (!list) return;
+  const ids = task.relatedIds || [];
+  if (!ids.length) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--text3);padding:4px 0;font-style:italic">${t('related_empty')}</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  ids.forEach(rid => {
+    const rel = tasks.find(t2 => t2.id === rid);
+    if (!rel) return;
+    const row = document.createElement('div');
+    row.className = 'related-item';
+    row.innerHTML = `
+      <div class="ti-priority p${rel.priority||3} related-item-prio">${rel.priority||3}</div>
+      <span class="related-item-name">${escHtml(rel.name)}</span>
+      <button class="related-del" onclick="unlinkRelated('${escHtml(rid)}',event)">✕</button>`;
+    row.addEventListener('click', (e) => {
+      if (e.target.classList.contains('related-del')) return;
+      closeEditModal();
+      setTimeout(() => openEditModal(rid), 80);
+    });
+    list.appendChild(row);
+  });
+}
+
+function onRelatedSearch(val) {
+  const dd = document.getElementById('related-dropdown');
+  if (!val.trim()) { dd.classList.remove('open'); return; }
+  const task = tasks.find(t2 => t2.id === editingTaskId);
+  const existing = task?.relatedIds || [];
+  const matches = tasks.filter(t2 =>
+    t2.id !== editingTaskId &&
+    !existing.includes(t2.id) &&
+    t2.name.toLowerCase().includes(val.toLowerCase())
+  ).slice(0, 8);
+  dd.innerHTML = '';
+  matches.forEach(t2 => {
+    const opt = document.createElement('div');
+    opt.className = 'related-opt';
+    opt.innerHTML = `<span class="ti-priority p${t2.priority||3}" style="display:inline-flex;width:16px;height:16px;border-radius:3px;border:1.5px solid;align-items:center;justify-content:center;font-size:9px;font-weight:700;margin-right:5px">${t2.priority||3}</span>${escHtml(t2.name)}`;
+    opt.onmousedown = () => linkRelated(t2.id);
+    dd.appendChild(opt);
+  });
+  // Opció crear nova
+  const newOpt = document.createElement('div');
+  newOpt.className = 'related-opt related-opt-new';
+  newOpt.textContent = t('related_new_prefix') + '"' + val + '"';
+  newOpt.onmousedown = () => createAndLinkRelated(val);
+  dd.appendChild(newOpt);
+  dd.classList.add('open');
+}
+
+function hideRelatedDropdown() {
+  setTimeout(() => {
+    const dd = document.getElementById('related-dropdown');
+    if (dd) dd.classList.remove('open');
+  }, 150);
+}
+
+async function linkRelated(relId) {
+  if (!editingTaskId) return;
+  const task = await TaskFlowDB.getTask(editingTaskId);
+  if (!task) return;
+  if (!task.relatedIds) task.relatedIds = [];
+  if (!task.relatedIds.includes(relId)) {
+    task.relatedIds.push(relId);
+    // Bidireccional
+    const rel = await TaskFlowDB.getTask(relId);
+    if (rel) {
+      if (!rel.relatedIds) rel.relatedIds = [];
+      if (!rel.relatedIds.includes(editingTaskId)) {
+        rel.relatedIds.push(editingTaskId);
+        await TaskFlowDB.putTask(rel);
+      }
+    }
+    await saveTask(task);
+    await loadData();
+  }
+  document.getElementById('related-search').value = '';
+  document.getElementById('related-dropdown').classList.remove('open');
+  renderRelatedSection(task);
+}
+
+async function createAndLinkRelated(name) {
+  const newTask = {
+    id: 'task_' + Date.now(),
+    name: name.trim() || t('task_placeholder'),
+    desc: '', emailId: '', emailSubject: '', emailFrom: '',
+    conversationId: '', resp: 'me', assigneeName: '',
+    priority: 3, status: 'pending', project: '', category: 'Task',
+    due: '', followupDays: 0, vendor: '',
+    created: Date.now(), lastActivity: new Date().toISOString(),
+    source: 'related-create'
+  };
+  await TaskFlowDB.putTask(newTask);
+  tasks = await TaskFlowDB.getAllTasks();
+  await linkRelated(newTask.id);
+}
+
+async function unlinkRelated(relId, e) {
+  if (e) e.stopPropagation();
+  if (!editingTaskId) return;
+  const task = await TaskFlowDB.getTask(editingTaskId);
+  if (!task) return;
+  task.relatedIds = (task.relatedIds || []).filter(id => id !== relId);
+  const rel = await TaskFlowDB.getTask(relId);
+  if (rel) {
+    rel.relatedIds = (rel.relatedIds || []).filter(id => id !== editingTaskId);
+    await TaskFlowDB.putTask(rel);
+  }
+  await saveTask(task);
+  await loadData();
+  renderRelatedSection(task);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — ACTIVITAT PERIÒDICA
+// task.recur = { enabled, num, unit, groupId }
+// task.recurGroupId = shared ID per al conjunt de repeticions
+// ══════════════════════════════════════════════════════════════
+
+function onRecurToggle() {
+  const on = document.getElementById('recur-toggle').checked;
+  const cfg = document.getElementById('recur-config');
+  if (cfg) cfg.classList.toggle('visible', on);
+}
+
+function renderRecurSection(task) {
+  const tog = document.getElementById('recur-toggle');
+  const cfg = document.getElementById('recur-config');
+  const num = document.getElementById('recur-num');
+  const unit = document.getElementById('recur-unit');
+  const recur = task.recur || {};
+  if (tog) tog.checked = !!recur.enabled;
+  if (cfg) cfg.classList.toggle('visible', !!recur.enabled);
+  if (num)  num.value  = recur.num  || 1;
+  if (unit) unit.value = recur.unit || 'months';
+  // Traduir opcions de recur-unit
+  const unitSel = document.getElementById('recur-unit');
+  if (unitSel) {
+    unitSel.querySelectorAll('option[data-i18n]').forEach(o => {
+      o.textContent = t(o.getAttribute('data-i18n'));
+    });
+  }
+}
+
+function getRecurFromForm() {
+  const enabled = document.getElementById('recur-toggle')?.checked || false;
+  if (!enabled) return { enabled: false };
+  return {
+    enabled: true,
+    num:  parseInt(document.getElementById('recur-num')?.value)  || 1,
+    unit: document.getElementById('recur-unit')?.value || 'months'
+  };
+}
+
+// Genera la propera tasca recurrent basada en una tasca completada
+async function spawnNextRecurrence(completedTask) {
+  if (!completedTask.recur?.enabled) return;
+  const { num, unit } = completedTask.recur;
+  const base = new Date();
+  base.setHours(0, 0, 0, 0);
+  const nextDate = new Date(base);
+  if (unit === 'days')   nextDate.setDate(nextDate.getDate() + num);
+  if (unit === 'weeks')  nextDate.setDate(nextDate.getDate() + num * 7);
+  if (unit === 'months') nextDate.setMonth(nextDate.getMonth() + num);
+
+  const followupDays = Math.round((nextDate - base) / 86400000);
+  const groupId = completedTask.recurGroupId || completedTask.id;
+
+  const newTask = {
+    ...JSON.parse(JSON.stringify(completedTask)), // deep clone
+    id:          'task_' + Date.now(),
+    status:      'pending',
+    created:     Date.now(),
+    lastActivity: new Date().toISOString(),
+    timeLog:     [],
+    relatedIds:  [],
+    followupDays,
+    source:      'recurrence',
+    recurGroupId: groupId,
+    emailId:     '',  // nova tasca sense email associat
+    emailSubject: completedTask.emailSubject || '',
+    emailFrom:   completedTask.emailFrom || '',
+    conversationId: '',
+  };
+  delete newTask.recurGroupId; // l'afegim explícitament
+  newTask.recurGroupId = groupId;
+
+  await TaskFlowDB.putTask(newTask);
+  tasks = await TaskFlowDB.getAllTasks();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TASKFLOW — CATEGORIES OUTLOOK → PROJECTES
+// ══════════════════════════════════════════════════════════════
+
+async function syncCategoriesToProjects(categories) {
+  let changed = false;
+  for (const cat of categories) {
+    const name = (cat.displayName || '').trim();
+    if (!name) continue;
+    const existing = projects.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (!existing) {
+      const colors = ['#8b7eff','#00f090','#ff9d2e','#1ab8ff','#ff4f4f','#ffe033','#b0a6ff'];
+      const newProj = {
+        id: 'proj_cat_' + name.replace(/\s+/g,'_').toLowerCase() + '_' + Date.now(),
+        name,
+        color: colors[projects.length % colors.length],
+        fromOutlookCategory: true
+      };
+      await TaskFlowDB.putProject(newProj);
+      projects.push(newProj);
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+// Torna l'ID del projecte que correspon a la primera categoria de l'email actual
+function getProjectIdFromCategories(categories) {
+  for (const cat of categories) {
+    const name = (cat.displayName || '').trim();
+    if (!name) continue;
+    const proj = projects.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (proj) return proj.id;
+  }
+  return '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// Helper: refrescar totes les llistes actives
+// ══════════════════════════════════════════════════════════════
+function refreshAllLists() {
+  if (currentTab === 'views') renderViews();
+  else renderTasks();
+}
+
 
 // ── EDIT MODAL ────────────────────────────────────────────────
 async function openEditModal(taskId) {
@@ -1986,6 +2582,24 @@ async function openEditModal(taskId) {
   } else {
     originBanner.classList.remove('visible');
   }
+
+  // Time tracking
+  renderTimeSection(task);
+  // Seguiment — data calculada
+  renderFollowupDate(task);
+  // Tasques relacionades
+  await loadData();
+  renderRelatedSection(task);
+  // Activitat periòdica
+  renderRecurSection(task);
+  // Traduir placeholders data-i18n-placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  // Traduir data-i18n dins el modal
+  document.querySelectorAll('.modal-sheet [data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
 
   document.getElementById('edit-modal').classList.add('open');
   setTimeout(() => document.getElementById('edit-name').focus(), 120);
@@ -2045,11 +2659,24 @@ async function saveEditedTask() {
   task.category     = document.getElementById('edit-category').value || 'Email';
   task.vendor       = (document.getElementById('edit-vendor')?.value || '').trim();
   task.lastActivity = new Date().toISOString();
+  // Recurrència
+  const newRecur    = getRecurFromForm();
+  const wasNotDone  = task.status !== 'done'; // estat anterior
+  const nowDone     = document.getElementById('edit-status').value === 'done';
+  task.recur        = newRecur;
+  if (!task.recurGroupId && newRecur.enabled) task.recurGroupId = task.id;
 
   await saveTask(task);
+
+  // Si s'ha marcat com a Feta i és recurrent, generar propera repetició
+  if (nowDone && newRecur.enabled) {
+    await spawnNextRecurrence(task);
+    await loadData();
+  }
+
   closeEditModal();
   await updateEmailTaskState();
-  renderTasks();
+  refreshAllLists();
 }
 
 async function deleteCurrentTask() {
