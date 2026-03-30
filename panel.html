@@ -1443,17 +1443,31 @@ function toggleTheme() {
   localStorage.setItem(THEME_KEY, next);
 }
 
-// Apply safe fallback theme immediately, but defer language/UI init until Office.onReady
+// Apply saved theme + lang immediately (before Office.onReady) to prevent flash
 (function() {
-  let savedTheme = 'dark';
-  try {
-    savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
-  } catch(e) {
-    savedTheme = 'dark';
-  }
+  const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+  // Idioma: usar el desat, o detectar del sistema si config diu 'auto' o no n'hi ha
+  const savedLang = localStorage.getItem(LANG_KEY);
+  const cfgRaw = localStorage.getItem(CONFIG_KEY);
+  let cfgLang = 'ca';
+  try {
+    const cfgObj = cfgRaw ? JSON.parse(cfgRaw) : {};
+    if (cfgObj.lang && cfgObj.lang !== 'auto') {
+      cfgLang = cfgObj.lang;
+    } else if (!savedLang || cfgObj.lang === 'auto') {
+      // Detectar del navegador/sistema (Office no disponible aquí encara)
+      const nav = (navigator.language || navigator.userLanguage || 'ca').toLowerCase();
+      cfgLang = nav.startsWith('ca') ? 'ca' : nav.startsWith('es') ? 'es' : nav.startsWith('en') ? 'en' : 'ca';
+    } else {
+      cfgLang = savedLang;
+    }
+  } catch(e) { cfgLang = savedLang || 'ca'; }
+  // applyLang tradueix tota la UI immediatament, sense esperar Office.onReady
+  applyLang(cfgLang);
 })();
 
 // ── INIT ──────────────────────────────────────────────────────
