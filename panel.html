@@ -799,7 +799,7 @@ const I18N = {
     view_mine_title:  'Les meves tasques',
     view_followup_title: 'Seguiment pendent',
     view_project_title: 'Tasques del projecte',
-    view_followup_empty: '📭 Cap tasca amb seguiment pendent per avui.',
+    view_followup_empty: '📭 Cap tasca amb seguiment actiu.',
     view_mine_empty:  '📭 Cap tasca assignada a tu.',
     view_project_empty: '📭 Cap tasca en aquest projecte.',
     view_project_none: 'Tria un projecte',
@@ -948,7 +948,7 @@ const I18N = {
     view_mine_title:  'Mis tareas',
     view_followup_title: 'Seguimiento pendiente',
     view_project_title: 'Tareas del proyecto',
-    view_followup_empty: '📭 Ninguna tarea con seguimiento pendiente para hoy.',
+    view_followup_empty: '📭 Ninguna tarea con seguimiento activo.',
     view_mine_empty:  '📭 Ninguna tarea asignada a ti.',
     view_project_empty: '📭 Ninguna tarea en este proyecto.',
     view_project_none: 'Elige un proyecto',
@@ -1081,7 +1081,7 @@ const I18N = {
     view_mine_title:  'My tasks',
     view_followup_title: 'Pending follow-up',
     view_project_title: 'Project tasks',
-    view_followup_empty: '📭 No tasks with pending follow-up for today.',
+    view_followup_empty: '📭 No tasks with active follow-up.',
     view_mine_empty:  '📭 No tasks assigned to you.',
     view_project_empty: '📭 No tasks in this project.',
     view_project_none: 'Choose a project',
@@ -1568,7 +1568,14 @@ async function bindEmailContext() {
 
     // Sincronitzar categories Outlook → projectes TaskFlow
     if (cats.length > 0) {
-      await syncCategoriesToProjects(cats);
+      const changed = await syncCategoriesToProjects(cats);
+      if (changed) {
+        populateProjectFilter();
+        populateViewProjectSelect();
+      }
+      // Pre-seleccionar projecte a la quick-create
+      const autoProj = getProjectIdFromCategories(cats);
+      if (autoProj) setProjectInput('q', autoProj);
     }
 
     const isPinned = cats.some(c =>
@@ -1726,18 +1733,17 @@ async function renderViews() {
     emptyMsg = t('view_mine_empty');
 
   } else if (currentView === 'followup') {
-    // Tasques amb seguiment que ha arribat o passat el dia de fer-lo, no tancades
+    // Totes les tasques amb seguiment actiu (passades, avui i futures), no tancades
     list = tasks.filter(task => {
       if (task.status === 'done') return false;
       if (!task.followupDays || task.followupDays <= 0) return false;
-      const followupDate = calcFollowupDate(task);
-      return followupDate && followupDate <= today;
+      return !!calcFollowupDate(task);
     });
-    // Ordenar per prioritat i per data de seguiment (les més endarrerides primer)
+    // Ordenació: vençudes primer (ASC per data) → avui → futures
     list.sort((a, b) => {
-      const pa = a.priority || 3, pb = b.priority || 3;
-      if (pa !== pb) return pa - pb;
-      return (a.created || 0) - (b.created || 0); // ASC: les més antigues primer
+      const fa = calcFollowupDate(a)?.getTime() ?? Infinity;
+      const fb = calcFollowupDate(b)?.getTime() ?? Infinity;
+      return fa - fb;
     });
     title    = t('view_followup_title');
     emptyMsg = t('view_followup_empty');
