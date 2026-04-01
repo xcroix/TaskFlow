@@ -1342,9 +1342,11 @@ function applyLang(lang) {
   const vfp2 = document.getElementById('vf-project');
   if (vfp2 && vfp2.options[0]) vfp2.options[0].textContent = t('view_all_projects');
 
-  // Re-render task list to update chips/labels
-  renderTasks();
-  if (currentTab === 'views') renderViews();
+  // Re-render task list to update chips/labels (only after app is fully initialized)
+  if (appReady) {
+    renderTasks();
+    if (currentTab === 'views') renderViews();
+  }
 }
 
 function setLang(lang) {
@@ -1400,6 +1402,7 @@ const PERSONS_KEY = 'taskflow_persons';
 
 let tasks            = [];
 let projects         = [];
+let appReady         = false;
 let currentEmailId   = null;
 let currentConvId    = null;
 let currentResp      = 'me';
@@ -1499,6 +1502,7 @@ Office.onReady(async (info) => {
   if (fInp) fInp.value = currentFollowupDays;
 
   // Sincronitzar i lligar context d'email només si estem a Outlook
+  appReady = true;
   if (info.host === Office.HostType.Outlook) {
     await syncFromRoaming();
     bindEmailContext();
@@ -1579,7 +1583,7 @@ async function bindEmailContext() {
     from ? `<span style="color:var(--text3)">${t('email_from_label')}:</span> ${escHtml(from.displayName||'')} &lt;${escHtml(from.emailAddress||'')}&gt;` : '';
 
   // Gestió de categories i badges (callback-based)
-  officeItem.categories.getAsync(result => {
+  officeItem.categories.getAsync(async (result) => {
     const cats = result.status === Office.AsyncResultStatus.Succeeded ? result.value : [];
 
     // Sincronitzar categories Outlook → projectes TaskFlow
