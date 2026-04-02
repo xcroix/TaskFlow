@@ -1624,18 +1624,21 @@ Office.onReady(async (info) => {
   await TaskFlowDB.init();
   await loadData();
 
-  // ✅ Re-aplicar traduccions ara que el DOM és complet (fix per Outlook)
-  const savedLang = localStorage.getItem(LANG_KEY);
-  const cfgOnReady = getConfig();
-  let langOnReady = 'ca';
-  if (cfgOnReady.lang && cfgOnReady.lang !== 'auto') {
-    langOnReady = cfgOnReady.lang;
-  } else if (savedLang) {
-    langOnReady = savedLang;
-  } else {
-    langOnReady = detectSystemLang();
+  // Aplicar idioma quan Office i el DOM ja estan llestos
+  let bootLang = 'ca';
+  try {
+    const cfg = getConfig();
+    if (cfg && cfg.lang && cfg.lang !== 'auto') {
+      bootLang = cfg.lang;
+    } else {
+      const ol = ((Office.context && Office.context.displayLanguage) || navigator.language || 'ca').toLowerCase();
+      bootLang = ol.startsWith('ca') ? 'ca' : ol.startsWith('es') ? 'es' : ol.startsWith('en') ? 'en' : 'ca';
+    }
+  } catch(e) {
+    const nav = (navigator.language || navigator.userLanguage || 'ca').toLowerCase();
+    bootLang = nav.startsWith('ca') ? 'ca' : nav.startsWith('es') ? 'es' : nav.startsWith('en') ? 'en' : 'ca';
   }
-  applyLang(langOnReady); // Re-aplicar després que el DOM i Office estan llests
+  applyLang(bootLang);
 
   // Aplicar configuració desada
   const cfg = getConfig();
@@ -1644,6 +1647,7 @@ Office.onReady(async (info) => {
   if (fInp) fInp.value = currentFollowupDays;
 
   // Sincronitzar i lligar context d'email només si estem a Outlook
+  appReady = true;
   if (info.host === Office.HostType.Outlook) {
     await syncFromRoaming();
     bindEmailContext();
