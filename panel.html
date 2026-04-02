@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TaskFlow</title>
 <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
-<script src="taskflow-db.js"></script>
+<script src="taskflow-db.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ── DARK THEME (default) ── */
@@ -1623,6 +1623,19 @@ Office.onReady(async (info) => {
   // Inicialitzar la BD sempre, independentment del host
   await TaskFlowDB.init();
   await loadData();
+
+  // ✅ Re-aplicar traduccions ara que el DOM és complet (fix per Outlook)
+  const savedLang = localStorage.getItem(LANG_KEY);
+  const cfgOnReady = getConfig();
+  let langOnReady = 'ca';
+  if (cfgOnReady.lang && cfgOnReady.lang !== 'auto') {
+    langOnReady = cfgOnReady.lang;
+  } else if (savedLang) {
+    langOnReady = savedLang;
+  } else {
+    langOnReady = detectSystemLang();
+  }
+  applyLang(langOnReady); // Re-aplicar després que el DOM i Office estan llests
 
   // Aplicar configuració desada
   const cfg = getConfig();
